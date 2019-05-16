@@ -15,10 +15,12 @@ uint256 CBlockHeader::GetHash() const
     return HashX22I(BEGIN(nVersion), END(nNonce));
 }
 
-uint256 CBlockHeader::GetPoWHash(int nHeight) const
+uint256 CBlockHeader::GetPoWHash(bool fSinMode) const
 {
-    // printf("%d\n", nHeight);
-    return HashX22I(BEGIN(nVersion), END(nNonce));
+    if (!fSinMode)
+        return HashX22I(BEGIN(nVersion), END(nNonce));
+    else
+        return HashX25X(BEGIN(nVersion), END(nNonce));
 }
 
 std::string CBlock::ToString() const
