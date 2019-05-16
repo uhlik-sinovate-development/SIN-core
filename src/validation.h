@@ -177,7 +177,6 @@ extern CAmount maxTxFee;
 /** If the tip is older than this (in seconds), the node is considered to be in initial block download. */
 extern int64_t nMaxTipAge;
 extern bool fEnableReplacement;
-
 extern bool fLargeWorkForkFound;
 extern bool fLargeWorkInvalidChainFound;
 
@@ -221,6 +220,10 @@ static const unsigned int DEFAULT_CHECKLEVEL = 3;
 // one 128MB block file + added 15% undo data = 147MB greater for a total of 545MB
 // Setting the target to > than 550MB will make it likely we can respect the target.
 static const uint64_t MIN_DISK_SPACE_FOR_BLOCK_FILES = 550 * 1024 * 1024;
+
+bool IsSin();
+const char* DevAddressForEnvironment();
+CScript DevScriptForEnvironment();
 
 /**
  * Process an incoming block. This only returns after the best known valid

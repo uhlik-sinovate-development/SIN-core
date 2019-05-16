@@ -91,8 +91,6 @@ struct Params {
     int BIP65Height;
     /** Block height at which BIP66 becomes active */
     int BIP66Height;
-    const char *devAddressPubKey;
-    const char *devAddress;
     const char *cBurnAddress;
     const char *cBurnAddressPubKey;
     /**

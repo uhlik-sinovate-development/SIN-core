@@ -62,8 +62,6 @@
 #define MICRO 0.000001
 #define MILLI 0.001
 
-CScript devScript;
-
 /**
  * Global state
  */
@@ -329,6 +327,56 @@ static void FindFilesToPruneManual(std::set<int>& setFilesToPrune, int nManualPr
 static void FindFilesToPrune(std::set<int>& setFilesToPrune, uint64_t nPruneAfterHeight);
 bool CheckInputs(const CTransaction& tx, CValidationState &state, const CCoinsViewCache &inputs, bool fScriptChecks, unsigned int flags, bool cacheSigStore, bool cacheFullScriptStore, PrecomputedTransactionData& txdata, std::vector<CScriptCheck> *pvChecks = nullptr);
 static FILE* OpenUndoFile(const CDiskBlockPos &pos, bool fReadOnly = false);
+
+//////////////////////////////////////////////////////////////////////////////
+// Blockheight at which we enable SIN
+const int nSinHeightTestnet = 100000;
+const int nSinHeightMainnet = 165000;
+
+// Devaddress for SIN environment
+const char *nPreSinPubKey   = "841e6bf56b99a59545da932de2efb23ab93b4f44";
+const char *nPreSinAddress  = "SZLafuDjnjqh2tAfTrG9ZAGzbP8HkzNXvB";
+const char *nPostSinPubKey  = "1c6d12e4f8e595d393f6cd4eac6d0c0de3f075f8";
+const char *nPostSinAddress = "SPtJco1H1yXhxNCmYk7ZVURXR7ZavYzPxS";
+
+//////////////////////////////////////////////////////////////////////////////
+//  Mode toggle for SIN
+
+bool IsSin()
+{
+    bool fSinMode = false;
+    int nHeight = chainActive.Height();
+
+    if (Params().NetworkIDString() == CBaseChainParams::MAIN &&
+        nHeight >= nSinHeightMainnet)
+        fSinMode = true;
+
+    if (Params().NetworkIDString() == CBaseChainParams::TESTNET &&
+        nHeight >= nSinHeightTestnet)
+        fSinMode = true;
+
+    return fSinMode;
+}
+
+const char* DevAddressForEnvironment()
+{
+    if (!IsSin())
+       return nPreSinAddress;
+    else
+       return nPostSinAddress;
+}
+
+CScript DevScriptForEnvironment()
+{
+    CScript devScript;
+    if (!IsSin())
+       devScript << OP_DUP << OP_HASH160 << ParseHex(nPreSinPubKey) << OP_EQUALVERIFY << OP_CHECKSIG;
+    else
+       devScript << OP_DUP << OP_HASH160 << ParseHex(nPostSinPubKey) << OP_EQUALVERIFY << OP_CHECKSIG;
+    return devScript;
+}
+
+//////////////////////////////////////////////////////////////////////////////
 
 bool CheckFinalTx(const CTransaction &tx, int flags)
 {
@@ -2222,16 +2270,21 @@ bool CChainState::ConnectBlock(const CBlock& block, CValidationState& state, CBl
     LogPrint(BCLog::BENCH, "      - Connect %u transactions: %.2fms (%.3fms/tx, %.3fms/txin) [%.2fs (%.2fms/blk)]\n", (unsigned)block.vtx.size(), MILLI * (nTime3 - nTime2), MILLI * (nTime3 - nTime2) / block.vtx.size(), nInputs <= 1 ? 0 : MILLI * (nTime3 - nTime2) / (nInputs-1), nTimeConnect * MICRO, nTimeConnect * MILLI / nBlocksTotal);
 
     CAmount blockReward = nFees + GetBlockSubsidy(pindex->nHeight, chainparams.GetConsensus());
+
+#if 0
     if (block.vtx[0]->GetValueOut() > blockReward + GetDevCoin(blockReward))
         return state.DoS(100,
                          error("ConnectBlock(): coinbase pays too much (actual=%d vs limit=%d)",
                                block.vtx[0]->GetValueOut(), blockReward + GetDevCoin(blockReward)),
                                REJECT_INVALID, "bad-cb-amount");
+#endif
 
     // verify devfund addr and amount are correct
-    if (block.vtx[0]->vout[1].scriptPubKey != devScript)
+    CScript testReward = DevScriptForEnvironment();
+    if (block.vtx[0]->vout[1].scriptPubKey != testReward)
         return state.DoS(100, error("ConnectBlock(): coinbase does not pay to the dev fund address."), REJECT_INVALID, "bad-cb-dev-fee");
 	LogPrintf("Miner -- Dev fee paid: %d, Calcul dev fee %d\n", block.vtx[0]->vout[1].nValue, GetDevCoin(blockReward));
+
     if (block.vtx[0]->vout[1].nValue < GetDevCoin(blockReward))
         return state.DoS(100, error("ConnectBlock(): coinbase does not pay enough to the dev fund address."), REJECT_INVALID, "bad-cb-dev-fee");
 
@@ -4565,8 +4618,6 @@ void UnloadBlockIndex()
 
 bool LoadBlockIndex(const CChainParams& chainparams)
 {
-    devScript << OP_DUP << OP_HASH160 << ParseHex(chainparams.GetConsensus().devAddressPubKey) << OP_EQUALVERIFY << OP_CHECKSIG;
-
     // Load block index from databases
     bool needs_init = fReindex;
     if (!fReindex) {

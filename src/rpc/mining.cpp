@@ -750,7 +750,7 @@ static UniValue getblocktemplate(const JSONRPCRequest& request)
         result.pushKV("default_witness_commitment", HexStr(pblocktemplate->vchCoinbaseCommitment.begin(), pblocktemplate->vchCoinbaseCommitment.end()));
     }
 
-    result.push_back(Pair("payee", Params().GetConsensus().devAddress));
+    result.push_back(Pair("payee", DevAddressForEnvironment()));
     result.push_back(Pair("payee_amount", (int64_t)pblock->vtx[0]->vout[1].nValue));
 
     return result;
