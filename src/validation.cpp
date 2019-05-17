@@ -330,8 +330,9 @@ static FILE* OpenUndoFile(const CDiskBlockPos &pos, bool fReadOnly = false);
 
 //////////////////////////////////////////////////////////////////////////////
 // Blockheight at which we enable SIN
-const int nSinHeightTestnet = 100000;
-const int nSinHeightMainnet = 165000;
+const int nSinHeightFinalnet = 200;
+const int nSinHeightTestnet  = 100000;
+const int nSinHeightMainnet  = 165000;
 
 // Devaddress for SIN environment
 const char *nPreSinPubKey   = "841e6bf56b99a59545da932de2efb23ab93b4f44";
@@ -353,6 +354,10 @@ bool IsSin()
 
     if (Params().NetworkIDString() == CBaseChainParams::TESTNET &&
         nHeight >= nSinHeightTestnet)
+        fSinMode = true;
+
+    if (Params().NetworkIDString() == CBaseChainParams::FINALNET &&
+        nHeight >= nSinHeightFinalnet)
         fSinMode = true;
 
     return fSinMode;
