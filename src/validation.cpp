@@ -2228,7 +2228,7 @@ bool CChainState::ConnectBlock(const CBlock& block, CValidationState& state, CBl
 
     // Basic testing to ensure pays go to correct sinnode tiers
 	int forkInfinityNode = 170000;
-    int enforceHeight = 185500; //observation - change it later
+    int enforceHeight = 176500; //observation - change it later
     if (pindex->nHeight > forkInfinityNode)
     {
 		if (!IsBlockPayeeValid(block.vtx[0], pindex->nHeight, block.vtx[0]->GetValueOut(), pindex->GetBlockHeader())) {

@@ -667,7 +667,7 @@ bool CMasternodeBlockPayees::IsTransactionValid(const CTransactionRef txNew)
             nMaxSignatures = payee.GetVoteCount();
         }
     }
-	LogPrintf("*T CMasternodeBlockPayees::IsTransactionValid -- nMaxSignatures: %d\n", nMaxSignatures);
+	LogPrintf("CMasternodeBlockPayees::IsTransactionValid -- nMaxSignatures: %d\n", nMaxSignatures);
     // if we don't have at least MNPAYMENTS_SIGNATURES_REQUIRED signatures on a payee, approve whichever is the longest chain
     if(nMaxSignatures < MNPAYMENTS_SIGNATURES_REQUIRED) return true;
 
@@ -685,7 +685,7 @@ bool CMasternodeBlockPayees::IsTransactionValid(const CTransactionRef txNew)
 				for (auto& payee : vecPayees) {
 					CAmount nMasternodePayment = GetMasternodePayment(nBlockHeight, payee.GetSinType());
 					if (payee.GetPayee() == txout.scriptPubKey && nMasternodePayment == txout.nValue){
-						LogPrintf("*T CMasternodeBlockPayees::IsTransactionValid -- Found required payment\n");
+						LogPrintf("CMasternodeBlockPayees::IsTransactionValid -- Found required payment\n");
 						counterNodePayment ++;
 					}
 
@@ -712,12 +712,12 @@ bool CMasternodeBlockPayees::IsTransactionValid(const CTransactionRef txNew)
 			}
 		}
 	}
-	LogPrintf("*T CMasternodeBlockPayees::IsTransactionValid -- 3 payments in coinbaseTx: %s\n", strPayeesInTx);
+	LogPrintf("CMasternodeBlockPayees::IsTransactionValid -- 3 payments in coinbaseTx: %s\n", strPayeesInTx);
 	if ( counterNodePayment == 3 ) {
-		LogPrintf("*T CMasternodeBlockPayees::IsTransactionValid -- 3 payments are valided\n");
+		LogPrintf("CMasternodeBlockPayees::IsTransactionValid -- 3 payments are valided\n");
 		return true;
 	} else {
-		LogPrintf("*T CMasternodeBlockPayees::IsTransactionValid -- ERROR: Missing required payment, possible payees: '%s'\n", strPayeesPossible);
+		LogPrintf("CMasternodeBlockPayees::IsTransactionValid -- ERROR: Missing required payment, possible payees: '%s'\n", strPayeesPossible);
 		return false;
 	}
 }
