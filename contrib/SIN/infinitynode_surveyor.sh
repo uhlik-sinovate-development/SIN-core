@@ -55,6 +55,7 @@ if [ "$CHECK_SIN" -eq "0" ]; then
 	#infinitynode is ENABLED
 	if [ "$SINSTATUS" -eq "1" ]; then
 		echo "$DATE_WITH_TIME : infinitynode is started." >> ~/.sin/sin_control.log
+	fi
 fi
 
 #node is stopped by supplier - maintenance

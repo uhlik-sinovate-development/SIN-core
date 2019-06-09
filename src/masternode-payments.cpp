@@ -147,7 +147,7 @@ bool IsBlockPayeeValid(const CTransactionRef txNew, int nBlockHeight, CAmount bl
 
     if(nBlockHeight < consensusParams.nSuperblockStartBlock) {
         if(mnpayments.IsTransactionValid(txNew, nBlockHeight)) {
-            LogPrint(BCLog::MNPAYMENTS, "IsBlockPayeeValid -- Valid masternode payment at height %d: %s\n", nBlockHeight, txNew->ToString());
+            LogPrintf("IsBlockPayeeValid -- Valid masternode payment at height %d: %s\n", nBlockHeight, txNew->ToString());
             return true;
         }
 
@@ -291,12 +291,7 @@ void CMasternodePayments::FillBlockPayee(CMutableTransaction& txNew, int nBlockH
 {
     // make sure it's not filled yet
     txoutMasternodeRet.clear();
-    CBlock blockReadFromDisk;
-    CScript burnfundScript;
-    burnfundScript << OP_DUP << OP_HASH160 << ParseHex(Params().GetConsensus().cBurnAddressPubKey) << OP_EQUALVERIFY << OP_CHECKSIG;
-    int enforceHeight = 185500;
-	CBlockIndex* prevBlockIndex = chainActive.Tip();
-	CBlockIndex* pIndex = chainActive.Tip();
+
     CScript payee;
 	for (auto& sintype : vSinType) {
 		CAmount masternodePayment = GetMasternodePayment(nBlockHeight, sintype.first);
@@ -312,34 +307,6 @@ void CMasternodePayments::FillBlockPayee(CMutableTransaction& txNew, int nBlockH
 				// fill payee with locally calculated winner and hope for the best
 				payee = GetScriptForDestination(mnInfo.pubKeyCollateralAddress.GetID());
 			}
-
-			prevBlockIndex = pIndex;
-			bool badPayment = false;
-			for (int i=0; i < 7; i++)
-			{
-				LogPrintf("*T CMasternodePayments::FillBlockPayee -- Check node payment with block %d\n", prevBlockIndex->nHeight);
-				if (ReadBlockFromDisk(blockReadFromDisk, prevBlockIndex, Params().GetConsensus())) 
-				{
-					int payeepos = 2;
-					if ( sintype.first == 1 ) payeepos = 2;
-					if ( sintype.first == 5 ) payeepos = 3;
-					if ( sintype.first == 10 ) payeepos = 4;
-					CScript prevPayee =  blockReadFromDisk.vtx[0]->vout[payeepos].scriptPubKey;
-						if ( prevPayee == payee && payee != burnfundScript )
-						{
-							LogPrintf("*T CMasternodePayments::FillBlockPayee -- Detect a bad node reward at height: %d\n", prevBlockIndex->nHeight);
-							if (pIndex->nHeight >= enforceHeight) {
-								LogPrintf("*T CMasternodePayments::FillBlockPayee -- Reject payment: %d\n", sintype.first);
-								badPayment =true;
-							}
-						}
-					LogPrintf("*T no conflit with block height: %d\n", prevBlockIndex->nHeight);
-					// continue with previous block
-					prevBlockIndex = prevBlockIndex->pprev;
-				}
-			}
-
-			if ( badPayment ) payee = burnfundScript;
 
 			// split reward between miner ...
 			txNew.vout[0].nValue -= masternodePayment;
@@ -692,6 +659,7 @@ bool CMasternodeBlockPayees::IsTransactionValid(const CTransactionRef txNew)
 
     int nMaxSignatures = 0;
     std::string strPayeesPossible = "";
+	std::string strPayeesInTx = "";
 
     //require at least MNPAYMENTS_SIGNATURES_REQUIRED signatures
     for (auto& payee : vecPayees) {
@@ -699,34 +667,59 @@ bool CMasternodeBlockPayees::IsTransactionValid(const CTransactionRef txNew)
             nMaxSignatures = payee.GetVoteCount();
         }
     }
-
+	LogPrintf("*T CMasternodeBlockPayees::IsTransactionValid -- nMaxSignatures: %d\n", nMaxSignatures);
     // if we don't have at least MNPAYMENTS_SIGNATURES_REQUIRED signatures on a payee, approve whichever is the longest chain
     if(nMaxSignatures < MNPAYMENTS_SIGNATURES_REQUIRED) return true;
 
-    for (auto& payee : vecPayees) {
-        if (payee.GetVoteCount() >= MNPAYMENTS_SIGNATURES_REQUIRED) {
-	     CAmount nMasternodePayment = GetMasternodePayment(nBlockHeight, payee.GetSinType());
-            for (auto txout : txNew->vout) {
-                if (payee.GetPayee() == txout.scriptPubKey && nMasternodePayment == txout.nValue) {
-                    LogPrint(BCLog::MNPAYMENTS, "CMasternodeBlockPayees::IsTransactionValid -- Found required payment\n");
-                    return true;
-                }
-            }
+	int counterNodePayment = 0;
+	CScript burnfundScript;
+	burnfundScript << OP_DUP << OP_HASH160 << ParseHex(Params().GetConsensus().cBurnAddressPubKey) << OP_EQUALVERIFY << OP_CHECKSIG;
 
-            CTxDestination address1;
-            ExtractDestination(payee.GetPayee(), address1);
-            std::string address2 = EncodeDestination(address1);
+	int txIndex = 0;
+	for (auto txout : txNew->vout) {
+		txIndex ++;
+		if (3 <= txIndex && txIndex <=5) {
+			if ( txout.scriptPubKey == burnfundScript ) {
+				counterNodePayment ++;
+			} else {
+				for (auto& payee : vecPayees) {
+					CAmount nMasternodePayment = GetMasternodePayment(nBlockHeight, payee.GetSinType());
+					if (payee.GetPayee() == txout.scriptPubKey && nMasternodePayment == txout.nValue){
+						LogPrintf("*T CMasternodeBlockPayees::IsTransactionValid -- Found required payment\n");
+						counterNodePayment ++;
+					}
 
-            if(strPayeesPossible == "") {
-                strPayeesPossible = address2;
-            } else {
-                strPayeesPossible += "," + address2;
-            }
-        }
-    }
+					CTxDestination address1;
+					ExtractDestination(payee.GetPayee(), address1);
+					std::string address2 = EncodeDestination(address1);
 
-    LogPrintf("CMasternodeBlockPayees::IsTransactionValid -- ERROR: Missing required payment, possible payees: '%s'\n", strPayeesPossible);
-    return false;
+					if(strPayeesPossible == "") {
+						strPayeesPossible = address2;
+					} else {
+						strPayeesPossible += "," + address2;
+					}
+				}
+			}
+			//extraction list 3 payment in Coinbase Tx
+			CTxDestination addressTx1;
+			ExtractDestination(txout.scriptPubKey, addressTx1);
+			std::string addressTx2 = EncodeDestination(addressTx1);
+
+			if(strPayeesInTx == "") {
+				strPayeesInTx = addressTx2;
+			} else {
+				strPayeesInTx += "," + addressTx2;
+			}
+		}
+	}
+	LogPrintf("*T CMasternodeBlockPayees::IsTransactionValid -- 3 payments in coinbaseTx: %s\n", strPayeesInTx);
+	if ( counterNodePayment == 3 ) {
+		LogPrintf("*T CMasternodeBlockPayees::IsTransactionValid -- 3 payments are valided\n");
+		return true;
+	} else {
+		LogPrintf("*T CMasternodeBlockPayees::IsTransactionValid -- ERROR: Missing required payment, possible payees: '%s'\n", strPayeesPossible);
+		return false;
+	}
 }
 
 std::string CMasternodeBlockPayees::GetRequiredPaymentsString()
