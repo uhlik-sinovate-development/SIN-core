@@ -2227,21 +2227,60 @@ bool CChainState::ConnectBlock(const CBlock& block, CValidationState& state, CBl
         return state.DoS(100, error("ConnectBlock(): coinbase does not pay enough to the dev fund address."), REJECT_INVALID, "bad-cb-dev-fee");
 
     // Basic testing to ensure pays go to correct sinnode tiers
-    int enforceHeight = 175500;
-    for (int payeepos = 2; payeepos < 5; payeepos++) {
-	int fValidTier = mnodeman.IsPayeeAValidMasternode(block.vtx[0]->vout[payeepos].scriptPubKey);
-        if (fValidTier == 0) {
-            LogPrintf("Found invalid masternode %s at block.vtx[0].vout[%d]\n", block.vtx[0]->vout[payeepos].scriptPubKey.ToString().c_str(), payeepos);
-           if (pindex->nHeight >= enforceHeight) {
-               LogPrintf("Rejecting block as a result.. (height %d)\n", pindex->nHeight);
-               return false;
-           }
-	} else if (fValidTier == 1) {
-	    LogPrintf("Skipping tier checks as masternodeList is not yet synced..\n");
-        } else {
-            LogPrintf("Found valid masternode %s at block.vtx[0].vout[%d]\n", block.vtx[0]->vout[payeepos].scriptPubKey.ToString().c_str(), payeepos);
-        }
-    }
+	int forkInfinityNode = 170000;
+    int enforceHeight = 185500; //observation - change it later
+    if (pindex->nHeight > forkInfinityNode)
+    {
+		for (int payeepos = 2; payeepos < 5; payeepos++) {
+		    int fValidTier = mnodeman.IsPayeeAValidMasternode(block.vtx[0]->vout[payeepos].scriptPubKey);
+			if (fValidTier == 0) {
+				LogPrintf("*T ConnectBlock(): Found invalid masternode %s at block.vtx[0].vout[%d]\n", block.vtx[0]->vout[payeepos].scriptPubKey.ToString().c_str(), payeepos);
+			   if (pindex->nHeight >= enforceHeight) {
+				   LogPrintf("*T ConnectBlock(): Rejecting block as a result.. (height %d)\n", pindex->nHeight);
+				   return false;
+			   }
+			} else if (fValidTier == 1) {
+				LogPrintf("*T ConnectBlock(): Skipping tier checks as masternodeList is not yet synced..\n");
+			} else {
+				LogPrintf("*T ConnectBlock(): Found valid masternode %s at block.vtx[0].vout[%d]\n", block.vtx[0]->vout[payeepos].scriptPubKey.ToString().c_str(), payeepos);
+			}
+		}
+		// verify node payment with 7 prevBlocks
+		CBlockIndex* prevBlockIndex = pindex->pprev;
+		CBlock blockReadFromDisk;
+		CScript burnfundScript;
+		burnfundScript << OP_DUP << OP_HASH160 << ParseHex(chainparams.GetConsensus().cBurnAddressPubKey) << OP_EQUALVERIFY << OP_CHECKSIG;
+		LogPrintf("*T ConnectBlock(): Check node payment at %d with 7 block...\n", pindex->nHeight);
+		for (int i=0; i < 7; i++)
+		{
+			LogPrintf("*T ConnectBlock(): Check node payment with block %d\n", prevBlockIndex->nHeight);
+			if (ReadBlockFromDisk(blockReadFromDisk, prevBlockIndex, chainparams.GetConsensus()))
+			{
+				LogPrintf("*T ConnectBlock(): Read block %d from disk\n", prevBlockIndex->nHeight);
+				// make sure that 3 nodes payments are not in prev block
+				for (int payeepos = 2; payeepos < 5; payeepos++)
+				{
+					CScript payee =  block.vtx[0]->vout[payeepos].scriptPubKey;
+					if (
+						   (blockReadFromDisk.vtx[0]->vout[payeepos].scriptPubKey == payee)
+						   &&
+						   (payee != burnfundScript)
+					   )
+					{
+						 LogPrintf("*T ConnectBlock(): Detect a bad node reward at height: %d\n", prevBlockIndex->nHeight);
+						 if (pindex->nHeight >= enforceHeight) {
+							LogPrintf("*T ConnectBlock(): Reject block height: %d\n", pindex->nHeight);
+							return false;
+						 }
+					}
+					 LogPrintf("*T ConnectBlock(): No conflit with block height: %d\n", prevBlockIndex->nHeight);
+				}
+				// continue with previous block
+				prevBlockIndex = prevBlockIndex->pprev;
+			}
+		}
+	}
+    //
 
     if (!control.Wait())
         return state.DoS(100, error("%s: CheckQueue failed", __func__), REJECT_INVALID, "block-validation-failed");

@@ -291,7 +291,12 @@ void CMasternodePayments::FillBlockPayee(CMutableTransaction& txNew, int nBlockH
 {
     // make sure it's not filled yet
     txoutMasternodeRet.clear();
-
+    CBlock blockReadFromDisk;
+    CScript burnfundScript;
+    burnfundScript << OP_DUP << OP_HASH160 << ParseHex(Params().GetConsensus().cBurnAddressPubKey) << OP_EQUALVERIFY << OP_CHECKSIG;
+    int enforceHeight = 185500;
+	CBlockIndex* prevBlockIndex = chainActive.Tip();
+	CBlockIndex* pIndex = chainActive.Tip();
     CScript payee;
 	for (auto& sintype : vSinType) {
 		CAmount masternodePayment = GetMasternodePayment(nBlockHeight, sintype.first);
@@ -307,6 +312,34 @@ void CMasternodePayments::FillBlockPayee(CMutableTransaction& txNew, int nBlockH
 				// fill payee with locally calculated winner and hope for the best
 				payee = GetScriptForDestination(mnInfo.pubKeyCollateralAddress.GetID());
 			}
+
+			prevBlockIndex = pIndex;
+			bool badPayment = false;
+			for (int i=0; i < 7; i++)
+			{
+				LogPrintf("*T CMasternodePayments::FillBlockPayee -- Check node payment with block %d\n", prevBlockIndex->nHeight);
+				if (ReadBlockFromDisk(blockReadFromDisk, prevBlockIndex, Params().GetConsensus())) 
+				{
+					int payeepos = 2;
+					if ( sintype.first == 1 ) payeepos = 2;
+					if ( sintype.first == 5 ) payeepos = 3;
+					if ( sintype.first == 10 ) payeepos = 4;
+					CScript prevPayee =  blockReadFromDisk.vtx[0]->vout[payeepos].scriptPubKey;
+						if ( prevPayee == payee && payee != burnfundScript )
+						{
+							LogPrintf("*T CMasternodePayments::FillBlockPayee -- Detect a bad node reward at height: %d\n", prevBlockIndex->nHeight);
+							if (pIndex->nHeight >= enforceHeight) {
+								LogPrintf("*T CMasternodePayments::FillBlockPayee -- Reject payment: %d\n", sintype.first);
+								badPayment =true;
+							}
+						}
+					LogPrintf("*T no conflit with block height: %d\n", prevBlockIndex->nHeight);
+					// continue with previous block
+					prevBlockIndex = prevBlockIndex->pprev;
+				}
+			}
+
+			if ( badPayment ) payee = burnfundScript;
 
 			// split reward between miner ...
 			txNew.vout[0].nValue -= masternodePayment;
