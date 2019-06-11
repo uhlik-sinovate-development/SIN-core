@@ -2228,11 +2228,12 @@ bool CChainState::ConnectBlock(const CBlock& block, CValidationState& state, CBl
 
     // Basic testing to ensure pays go to correct sinnode tiers
 	int forkInfinityNode = 170000;
-    int enforceHeight = 176500; //observation - change it later
+    int enforceHeight = 178000;
     if (pindex->nHeight > forkInfinityNode)
     {
 		if (!IsBlockPayeeValid(block.vtx[0], pindex->nHeight, block.vtx[0]->GetValueOut(), pindex->GetBlockHeader())) {
 			mapRejectedBlocks.insert(std::make_pair(block.GetHash(), GetTime()));
+			LogPrintf("IsBlockPayeeValid -- disconnect block!\n");
 			if (pindex->nHeight >= enforceHeight) {
 				return state.DoS(0, error("ConnectBlock(DASH): couldn't find masternode or superblock payments"),
 					REJECT_INVALID, "bad-cb-payee");

@@ -146,6 +146,7 @@ bool IsBlockPayeeValid(const CTransactionRef txNew, int nBlockHeight, CAmount bl
     const Consensus::Params& consensusParams = Params().GetConsensus();
 
     if(nBlockHeight < consensusParams.nSuperblockStartBlock) {
+		LogPrintf("IsBlockPayeeValid -- Superblock is not started\n");
         if(mnpayments.IsTransactionValid(txNew, nBlockHeight)) {
             LogPrintf("IsBlockPayeeValid -- Valid masternode payment at height %d: %s\n", nBlockHeight, txNew->ToString());
             return true;
@@ -166,8 +167,8 @@ bool IsBlockPayeeValid(const CTransactionRef txNew, int nBlockHeight, CAmount bl
         }
 
         if(sporkManager.IsSporkActive(SPORK_8_MASTERNODE_PAYMENT_ENFORCEMENT)) {
-                LogPrintf("IsBlockPayeeValid -- WARNING: Masternode payment enforcement is ignored, accepting any payee\n");
-                return true;
+                LogPrintf("IsBlockPayeeValid -- ERROR: Invalid masternode payment detected at height %d: %s\n", nBlockHeight, txNew->ToString());
+                return false;
         }
 
         LogPrintf("IsBlockPayeeValid -- WARNING: Masternode payment enforcement is disabled, accepting any payee\n");
@@ -615,7 +616,7 @@ void CMasternodeBlockPayees::AddPayee(const CMasternodePaymentVote& vote)
         LogPrintf("MASTERNODEPAYMENTVOTE -- masternode is unknown %s\n", vote.vinMasternode.prevout.ToStringShort());
         return;
     }
-      
+
     CMasternodePayee payeeNew(vote.payee, pmn->GetSinTypeInt(), vote.GetHash());
     vecPayees.push_back(payeeNew);
 }
@@ -848,19 +849,19 @@ bool CMasternodePaymentVote::IsValid(CNode* pnode, int nValidationHeight, std::s
 
 CMasternode::SinType GetSinType(CAmount burnValue)
 {
-    
+
     if ((Params().GetConsensus().nMasternodeBurnSINNODE_1 - 1) * COIN < burnValue && burnValue <= Params().GetConsensus().nMasternodeBurnSINNODE_1 * COIN) {
         return CMasternode::SinType::SINNODE_1;
     }
-    
+
     if ((Params().GetConsensus().nMasternodeBurnSINNODE_5 -1) * COIN < burnValue &&  burnValue <= Params().GetConsensus().nMasternodeBurnSINNODE_5 * COIN) {
         return CMasternode::SinType::SINNODE_5;
     }
-    
+
     if ((Params().GetConsensus().nMasternodeBurnSINNODE_10 - 1) * COIN < burnValue && burnValue <= Params().GetConsensus().nMasternodeBurnSINNODE_10 * COIN) {
         return CMasternode::SinType::SINNODE_10;
     }
-    
+
     return CMasternode::SinType::SINNODE_UNKNOWN;
 }
 
@@ -907,7 +908,7 @@ bool CMasternodePayments::ProcessBlock(int nBlockHeight, CConnman& connman)
 
     CScript payee = GetScriptForDestination(mnInfo.pubKeyCollateralAddress.GetID());
     CMasternodePaymentVote voteNew(activeMasternode.outpoint, nBlockHeight, payee);
-    
+
     if(!GetUTXOCoin(mnInfo.vinBurnFund.prevout, coin)) {
         nBurnFundValue = 0;
     } else {
