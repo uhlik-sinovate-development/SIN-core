@@ -14,19 +14,22 @@
 #
 # change path of "sin_deamon" and "sin_cli"
 #
-# TODO: upload status of node to server for survey
+# TODO: 1. upload status of node to server for survey
+#       2. chech status of node from explorer
 #
 
 sin_deamon_name="sind"
 
 ## PLEASE CHANGE THIS
-sin_deamon="/path/SIN-core/src/sind"
-sin_cli="/path/SIN-core/src/sin-cli"
+sin_deamon="/usr/local/bin/sind"
+sin_cli="/usr/local/bin/sin-cli"
 ##
 
 DATE_WITH_TIME=`date "+%Y%m%d-%H:%M:%S"`
 
 function start_node() {
+	echo "$DATE_WITH_TIME : delete caches files debug.log db.log fee_estimates.dat governance.dat mempool.dat mncache.dat mnpayments.dat netfulfilled.dat" >> ~/.sin/sin_control.log 
+	cd ~/.sin && rm debug.log db.log fee_estimates.dat governance.dat mempool.dat mncache.dat mnpayments.dat netfulfilled.dat
 	sleep 5
 	echo "$DATE_WITH_TIME : Start sin deamon $sin_deamon" >> ~/.sin/sin_control.log
 	echo "$DATE_WITH_TIME : SIN_START" >> ~/.sin/sin_control.log
@@ -34,6 +37,8 @@ function start_node() {
 }
 
 function stop_start_node() {
+	echo "$DATE_WITH_TIME : delete caches files debug.log db.log fee_estimates.dat governance.dat mempool.dat mncache.dat mnpayments.dat netfulfilled.dat" >> ~/.sin/sin_control.log 
+	cd ~/.sin && rm debug.log db.log fee_estimates.dat governance.dat mempool.dat mncache.dat mnpayments.dat netfulfilled.dat
 	echo "$DATE_WITH_TIME : kill process by name $sin_deamon_name" >> ~/.sin/sin_control.log
 	echo "$DATE_WITH_TIME : SIN_STOP" >> ~/.sin/sin_control.log
 	pgrep -f $sin_deamon_name | awk '{print "kill -9 " $1}' | sh >> ~/.sin/sin_control.log
@@ -55,6 +60,8 @@ if [ "$CHECK_SIN" -eq "0" ]; then
 	#infinitynode is ENABLED
 	if [ "$SINSTATUS" -eq "1" ]; then
 		echo "$DATE_WITH_TIME : infinitynode is started." >> ~/.sin/sin_control.log
+	else
+		echo "$DATE_WITH_TIME : node is synchronising...please wait!" >> ~/.sin/sin_control.log
 	fi
 fi
 
