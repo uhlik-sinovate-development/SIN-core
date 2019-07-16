@@ -570,7 +570,7 @@ UniValue masternodelist(const JSONRPCRequest& request)
                                (int64_t)(mn.lastPing.sigTime - mn.sigTime) << " " <<
                                SafeIntVersionToString(mn.lastPing.nSentinelVersion) << " "  <<
                                (mn.lastPing.fSentinelIsCurrent ? "current" : "expired") << " " <<
-                               mn.addr.ToString() << " " << infinityType << " " << rewardAtHeight << " " <<burnAmountByType;
+                               mn.addr.ToString() << " " << infinityType << " " << rewardAtHeight << " " <<burnAmountByType << " " << mn.GetBurnFundTxInfo();
                 std::string strInfo = streamInfo.str();
                 if (strFilter !="" && strInfo.find(strFilter) == std::string::npos &&
                     strOutpoint.find(strFilter) == std::string::npos) continue;

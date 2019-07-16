@@ -296,6 +296,7 @@ public:
     static std::string StateToString(int nStateIn);
     std::string GetStateString() const;
     std::string GetStatus() const;
+    std::string GetBurnFundTxInfo() const;
 
     int GetLastPaidTime() { return nTimeLastPaid; }
     int GetLastPaidBlock() { return nBlockLastPaid; }

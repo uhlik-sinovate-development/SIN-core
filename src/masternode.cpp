@@ -533,6 +533,11 @@ std::string CMasternode::GetStatus() const
     return GetStateString();
 }
 
+std::string CMasternode::GetBurnFundTxInfo() const
+{
+    return strprintf("%s-%u",vinBurnFund.prevout.hash.ToString(), vinBurnFund.prevout.n);
+}
+
 void CMasternode::UpdateLastPaid(const CBlockIndex *pindex, int nMaxBlocksToScanBack)
 {
     if(!pindex) return;
