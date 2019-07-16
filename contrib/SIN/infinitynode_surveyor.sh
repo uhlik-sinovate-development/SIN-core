@@ -2,6 +2,8 @@
 # Copyright (c) 2019 The SIN Core developers
 # Auth: xtdevcoin
 #
+# modified by cyberd3vil
+#
 # this script control the status of node
 # 1. node is active
 # 2. infinitynode is ENABLED
@@ -21,11 +23,15 @@
 sin_deamon_name="sind"
 
 ## PLEASE CHANGE THIS
-sin_deamon="/usr/local/bin/sind"
-sin_cli="/usr/local/bin/sin-cli"
+sin_deamon="/home/$(whoami)/sind"
+sin_cli="/home/$(whoami)/sin-cli"
 ##
 
 DATE_WITH_TIME=`date "+%Y%m%d-%H:%M:%S"`
+
+# get current blockheight from SIN explorer and infinity node
+exp_blockheight=$(curl -s http://explorer.sinovate.io/api/getblockcount)
+mn_blockheight=$($sin_cli getblockcount)
 
 function start_node() {
 	echo "$DATE_WITH_TIME : delete caches files debug.log db.log fee_estimates.dat governance.dat mempool.dat mncache.dat mnpayments.dat netfulfilled.dat" >> ~/.sin/sin_control.log 
@@ -48,9 +54,21 @@ function stop_start_node() {
 	$sin_deamon &
 }
 
+function resync_node() {
+        echo "$DATE_WITH_TIME : kill process by name $sin_deamon_name" >> ~/.sin/sin_control.log
+        echo "$DATE_WITH_TIME : SIN_STOP" >> ~/.sin/sin_control.log
+        pgrep -f $sin_deamon_name | awk '{print "kill -9 " $1}' | sh >> ~/.sin/sin_control.log
+        sleep 15
+        echo "$DATE_WITH_TIME : Resyncing" >> ~/.sin/sin_control.log
+        echo "$DATE_WITH_TIME : SIN_START" >> ~/.sin/sin_control.log
+        $sin_deamon -reindex &
+}
+
 timeout --preserve-status 10 $sin_cli getblockcount
 CHECK_SIN=$?
 echo "$DATE_WITH_TIME : check status of sind: $CHECK_SIN" >> ~/.sin/sin_control.log
+echo "$DATE_WITH_TIME : Explorer blockheight: $exp_blockheight" >> ~/.sin/sin_control.log
+echo "$DATE_WITH_TIME : Infinity Node blockheight: $mn_blockheight" >> ~/.sin/sin_control.log
 
 #node is active
 if [ "$CHECK_SIN" -eq "0" ]; then
@@ -60,6 +78,15 @@ if [ "$CHECK_SIN" -eq "0" ]; then
 	#infinitynode is ENABLED
 	if [ "$SINSTATUS" -eq "1" ]; then
 		echo "$DATE_WITH_TIME : infinitynode is started." >> ~/.sin/sin_control.log
+
+			#resync infinitynode if blockheight is not equal to SIN explorer
+			if [ "$exp_blockheight" -eq  "$mn_blockheight" ];then
+			    echo "$DATE_WITH_TIME : Blockheight is equal, no resync needed." >> ~/.sin/sin_control.log
+			else
+			    echo "$DATE_WITH_TIME : Blockheight not synced! Resyncing!" >> ~/.sin/sin_control.log
+			    resync_node
+			fi
+
 	else
 		echo "$DATE_WITH_TIME : node is synchronising...please wait!" >> ~/.sin/sin_control.log
 	fi
@@ -86,3 +113,5 @@ if [ "$CHECK_SIN" -eq "143" ]; then
 	echo "$DATE_WITH_TIME : sin deamon will be restarted...." >> ~/.sin/sin_control.log
 	stop_start_node
 fi
+
+echo "$DATE_WITH_TIME : ------------------" >> ~/.sin/sin_control.log
