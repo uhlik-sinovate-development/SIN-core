@@ -23,8 +23,8 @@
 sin_deamon_name="sind"
 
 ## PLEASE CHANGE THIS
-sin_deamon="/home/$(whoami)/sind"
-sin_cli="/home/$(whoami)/sin-cli"
+sin_deamon="/usr/local/bin/sind"
+sin_cli="/usr/local/bin/sin-cli"
 ##
 
 DATE_WITH_TIME=`date "+%Y%m%d-%H:%M:%S"`
