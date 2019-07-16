@@ -78,14 +78,19 @@ if [ "$CHECK_SIN" -eq "0" ]; then
 	#infinitynode is ENABLED
 	if [ "$SINSTATUS" -eq "1" ]; then
 		echo "$DATE_WITH_TIME : infinitynode is started." >> ~/.sin/sin_control.log
+		
+		# ping explorer webserver before comparing blockheight
+		if ping -c 1 explorer.sinovate.io &> /dev/null ;then
 
 			#resync infinitynode if blockheight is not equal to SIN explorer
-			if [ "$exp_blockheight" -eq  "$mn_blockheight" ] || [ "$(($exp_blockheight - 1))" -eq "$mn_blockheight" ];then
+			if [ "$mn_blockheight" -ge  "$exp_blockheight" ] || [ "$(($exp_blockheight - 1))" -eq "$mn_blockheight" ];then
 			    echo "$DATE_WITH_TIME : Blockheight is equal, no resync needed." >> ~/.sin/sin_control.log
 			else
 			    echo "$DATE_WITH_TIME : Blockheight not synced! Resyncing!" >> ~/.sin/sin_control.log
 			    resync_node
 			fi
+			
+		fi
 
 	else
 		echo "$DATE_WITH_TIME : node is synchronising...please wait!" >> ~/.sin/sin_control.log
