@@ -80,7 +80,7 @@ if [ "$CHECK_SIN" -eq "0" ]; then
 		echo "$DATE_WITH_TIME : infinitynode is started." >> ~/.sin/sin_control.log
 
 			#resync infinitynode if blockheight is not equal to SIN explorer
-			if [ "$exp_blockheight" -eq  "$mn_blockheight" ];then
+			if [ "$exp_blockheight" -eq  "$mn_blockheight" ] || [ "$(($exp_blockheight - 1))" -eq "$mn_blockheight" ];then
 			    echo "$DATE_WITH_TIME : Blockheight is equal, no resync needed." >> ~/.sin/sin_control.log
 			else
 			    echo "$DATE_WITH_TIME : Blockheight not synced! Resyncing!" >> ~/.sin/sin_control.log
