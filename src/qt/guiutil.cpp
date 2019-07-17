@@ -19,6 +19,7 @@
 #include <script/script.h>
 #include <script/standard.h>
 #include <util.h>
+#include <QProcess>
 
 #ifdef WIN32
 #ifdef _WIN32_WINNT
@@ -440,8 +441,17 @@ void openMNConfigfile()
     configFile.close();
 
     /* Open masternode.conf with the associated application */
-    if (fs::exists(pathConfig))
-        QDesktopServices::openUrl(QUrl::fromLocalFile(boostPathToQString(pathConfig)));
+    bool res;
+    if (fs::exists(pathConfig)) {
+        res = QDesktopServices::openUrl(QUrl::fromLocalFile(boostPathToQString(pathConfig)));
+#ifdef Q_OS_MAC
+        // Workaround for macOS-specific behavior; see #15409.
+        if (!res) {
+            res = QProcess::startDetached("/usr/bin/open", QStringList{"-t", boostPathToQString(pathConfig)});
+        }
+#endif
+    }
+    return;
 }
 //
 
