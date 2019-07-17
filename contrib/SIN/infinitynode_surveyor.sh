@@ -7,25 +7,22 @@
 # this script control the status of node
 # 1. node is active
 # 2. infinitynode is ENABLED
-# 3. infinitynode is not ENABLED
-# 4. node is stopped by supplier - maintenance
-# 5. node is frozen - dead lock
+# 3. if infinitynode is ENABLED compare blockheight with explorer and resync if frozen
+# 4. infinitynode is not ENABLED
+# 5. node is stopped by supplier - maintenance
+# 6. node is frozen - dead lock
 #
 # Add in crontab when YOUR NODE HAS STATUS ENABLED:
 # */5 * * * * /full_path_to/infinitynode_surveyor.sh
 #
-# change path of "sin_deamon" and "sin_cli"
 #
 # TODO: 1. upload status of node to server for survey
 #       2. chech status of node from explorer
 #
 
 sin_deamon_name="sind"
-
-## PLEASE CHANGE THIS
-sin_deamon="/usr/local/bin/sind"
-sin_cli="/usr/local/bin/sin-cli"
-##
+sin_deamon="/home/$(whoami)/sind"
+sin_cli="/home/$(whoami)/sin-cli"
 
 DATE_WITH_TIME=`date "+%Y%m%d-%H:%M:%S"`
 
