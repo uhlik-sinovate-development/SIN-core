@@ -34,7 +34,7 @@ X25X is CPU as well as GPU mineable and ensures **ASIC, FPGA and QUANTUM resista
 |Total Supply  | **Around 2.5 billion SIN after 20 years** |
 |Max Block Size  | **4 MB** |
 |SINOVATE legacy address start with  | **S** |
-|Masternode Port  | **4 MB** |
+|Infinity Node Port  | **20980** |
 |<small>BIG</small> Infinity Node Requirement  | **1.000.000 SIN** |
 |<small>MID</small> Infinity Node Requirement  | **500.000 SIN** |
 |<small>LIL</small> Infinity Node Requirement  | **100.000 SIN** |
