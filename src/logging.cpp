@@ -214,6 +214,9 @@ std::string BCLog::Logger::LogTimestampStr(const std::string &str)
 
 void BCLog::Logger::LogPrintStr(const std::string &str)
 {
+    //Prevent a race condition when logging timestamps
+    std::lock_guard<std::mutex> scoped_lock(m_file_mutex);
+
     std::string strTimestamped = LogTimestampStr(str);
 
     if (m_print_to_console) {
@@ -222,7 +225,7 @@ void BCLog::Logger::LogPrintStr(const std::string &str)
         fflush(stdout);
     }
     if (m_print_to_file) {
-        std::lock_guard<std::mutex> scoped_lock(m_file_mutex);
+        //std::lock_guard<std::mutex> scoped_lock(m_file_mutex);
 
         // buffer if we haven't opened the log yet
         if (m_fileout == nullptr) {
