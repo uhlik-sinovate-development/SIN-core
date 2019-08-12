@@ -273,7 +273,8 @@ void CGovernanceManager::ProcessMessage(CNode* pfrom, const std::string& strComm
             }
             return;
         }
-
+        // ZMQ
+        GetMainSignals().NotifyGovernanceVote(vote);
     }
 }
 
@@ -392,6 +393,10 @@ void CGovernanceManager::AddGovernanceObject(CGovernanceObject& govobj, CConnman
     CheckOrphanVotes(govobj, exception, connman);
 
     DBG( cout << "CGovernanceManager::AddGovernanceObject END" << endl; );
+
+    //ZMQ
+    
+    GetMainSignals().NotifyGovernanceObject(govobj);
 }
 
 bool CGovernanceManager::UpdateCurrentWatchdog(CGovernanceObject& watchdogNew)

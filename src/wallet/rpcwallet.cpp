@@ -2909,11 +2909,16 @@ static UniValue gettransaction(const JSONRPCRequest& request)
             + HelpExampleCli("gettransaction", "\"1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d\" true")
             + HelpExampleRpc("gettransaction", "\"1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d\"")
         );
-
+/******************************************************************************************************  
+    This will cause a race condition under specific quick rpc polling conditions (mining pools mostly).
+    A complete refac logic wise should be made for BlockUntilSyncedToCurrentChain(). Until then, the
+    best solution is commenting this out.
+    
     // Make sure the results are valid at least up to the most recent block
     // the user could have gotten from another RPC command prior to now
-    pwallet->BlockUntilSyncedToCurrentChain();
+    //pwallet->BlockUntilSyncedToCurrentChain();
 
+******************************************************************************************************/
     LOCK2(cs_main, pwallet->cs_wallet);
 
     uint256 hash;
