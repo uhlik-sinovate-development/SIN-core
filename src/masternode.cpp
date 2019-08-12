@@ -93,6 +93,69 @@ bool CMasternode::UpdateFromNewBroadcast(CMasternodeBroadcast& mnb, CConnman& co
     return true;
 }
 
+void CMasternode::updateInfinityNodeInfo()
+{
+    AssertLockHeld(cs_main);
+
+    Coin coinBurnFund;
+    Coin coinCollateral;
+
+    if(!GetUTXOCoin(vinBurnFund.prevout, coinBurnFund)) {
+		LogPrintf("CMasternode::updateInfinityNodeInfo -- BurnFund tx not found %s-%d\n", vinBurnFund.prevout.hash.ToString(), vinBurnFund.prevout.n);
+        return;
+    }
+
+    if(!GetUTXOCoin(vin.prevout, coinCollateral)) {
+		LogPrintf("CMasternode::updateInfinityNodeInfo -- BurnFund tx not found %s-%d\n", vin.prevout.hash.ToString(), vin.prevout.n);
+        return;
+    }
+
+    CTxDestination addressCollateral;
+    if (!ExtractDestination(coinCollateral.out.scriptPubKey, addressCollateral)) {
+        LogPrintf("CMasternode::updateInfinityNodeInfo -- Unknown destination of BurnFund tx\n");
+        return;
+    }
+
+    nExpireHeight = coinBurnFund.nHeight + 720*365;
+    nBurnAmount = coinBurnFund.out.nValue / COIN + 1; //automaticaly round
+    nCollateralAmount = coinCollateral.out.nValue / COIN;
+    collateralAddress = EncodeDestination(addressCollateral);
+    if (nBurnAmount >=100000) {nSinType = nBurnAmount / 100000;}
+    else { nSinType = nBurnAmount;}
+
+    CTransactionRef tx;
+    uint256 hashblock;
+    if(!GetTransaction(vinBurnFund.prevout.hash, tx, Params().GetConsensus(), hashblock, false)) {
+        LogPrintf("CMasternode::updateInfinityNodeInfo -- BurnFund tx is not in block\n");
+        return;
+    }
+    const CTxIn& txin = tx->vin[0];
+    int index = txin.prevout.n;
+
+    CTransactionRef prevtx;
+    if(!GetTransaction(txin.prevout.hash, prevtx, Params().GetConsensus(), hashblock, false)) {
+        LogPrintf("CMasternode::updateInfinityNodeInfo -- PrevBurnFund tx is not in block\n");
+        return;
+    }
+
+    std::vector<std::vector<unsigned char>> vSolutions;
+    txnouttype whichType;
+    const CScript& prevScript = coinBurnFund.out.scriptPubKey;
+    Solver(prevScript, whichType, vSolutions);
+    if (whichType == TX_BURN_DATA){burnTxStandard="burn_and_data";}
+
+    CTxDestination addressBurnFund;
+    if(!ExtractDestination(prevtx->vout[index].scriptPubKey, addressBurnFund)){
+        return;
+    }
+
+    burnfundAddress = EncodeDestination(addressBurnFund);
+/*
+    LogPrintf("CMasternode::updateInfinityNodeInfo -- Burn[Address: %s, Amount: %d, ExpiredHeight:%d, SinType:%d, Standard:%s] / Collateral[ Address:%s, Amount: %d]\n", burnfundAddress, nBurnAmount, nExpireHeight, nSinType, burnTxStandard, collateralAddress, nCollateralAmount);
+*/
+}
+
+
 //
 // Deterministically calculate a given "score" for a Masternode depending on how close it's hash is to
 // the proof of work for that block. The further away they are the better, the furthest will win the election
@@ -355,8 +418,11 @@ void CMasternode::Check(bool fForce)
 
     int nHeight = 0;
     if(!fUnitTest) {
-	TRY_LOCK(cs_main, lockMain);
-	if(!lockMain) return;
+        TRY_LOCK(cs_main, lockMain);
+        if(!lockMain) return;
+
+        //calcul all in one function for infinityNode info. We can release cs_main after this function
+        updateInfinityNodeInfo();
 
         CollateralStatus err = CheckCollateral(vin.prevout);
         if (err == COLLATERAL_UTXO_NOT_FOUND) {
