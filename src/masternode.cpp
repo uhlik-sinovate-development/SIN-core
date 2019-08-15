@@ -101,7 +101,7 @@ void CMasternode::updateInfinityNodeInfo()
     Coin coinCollateral;
 
     if(!GetUTXOCoin(vinBurnFund.prevout, coinBurnFund)) {
-		LogPrintf("CMasternode::updateInfinityNodeInfo -- BurnFund tx not found %s-%d\n", vinBurnFund.prevout.hash.ToString(), vinBurnFund.prevout.n);
+        LogPrintf("CMasternode::updateInfinityNodeInfo -- BurnFund tx not found %s-%d\n", vinBurnFund.prevout.hash.ToString(), vinBurnFund.prevout.n);
         return;
     }
 
@@ -115,13 +115,6 @@ void CMasternode::updateInfinityNodeInfo()
         LogPrintf("CMasternode::updateInfinityNodeInfo -- Unknown destination of BurnFund tx\n");
         return;
     }
-
-    nExpireHeight = coinBurnFund.nHeight + 720*365;
-    nBurnAmount = coinBurnFund.out.nValue / COIN + 1; //automaticaly round
-    nCollateralAmount = coinCollateral.out.nValue / COIN;
-    collateralAddress = EncodeDestination(addressCollateral);
-    if (nBurnAmount >=100000) {nSinType = nBurnAmount / 100000;}
-    else { nSinType = nBurnAmount;}
 
     CTransactionRef tx;
     uint256 hashblock;
@@ -149,10 +142,13 @@ void CMasternode::updateInfinityNodeInfo()
         return;
     }
 
+    nExpireHeight = coinBurnFund.nHeight + 720*365;
+    nBurnAmount = coinBurnFund.out.nValue / COIN + 1; //automaticaly round
+    nCollateralAmount = coinCollateral.out.nValue / COIN;
+    collateralAddress = EncodeDestination(addressCollateral);
+    if (nBurnAmount >=100000) {nSinType = nBurnAmount / 100000;}
+    else { nSinType = nBurnAmount;}
     burnfundAddress = EncodeDestination(addressBurnFund);
-/*
-    LogPrintf("CMasternode::updateInfinityNodeInfo -- Burn[Address: %s, Amount: %d, ExpiredHeight:%d, SinType:%d, Standard:%s] / Collateral[ Address:%s, Amount: %d]\n", burnfundAddress, nBurnAmount, nExpireHeight, nSinType, burnTxStandard, collateralAddress, nCollateralAmount);
-*/
 }
 
 
@@ -169,21 +165,6 @@ arith_uint256 CMasternode::CalculateScore(const uint256& blockHash)
     return UintToArith256(ss.GetHash());
 }
 
-bool CMasternode::IsBurnFundExpired(const COutPoint& outpoint)
-{
-    AssertLockHeld(cs_main);
-    Coin coin;
-    if(!GetUTXOCoin(outpoint, coin)) {
-        return true;
-    }
-    
-    if ((chainActive.Height() - 720*365) > coin.nHeight) {
-        LogPrintf("CMasternode::BurnFundStatus -- BurnFund tx is expired\n");
-        return true;
-    }
-    return false;
-}
-
 CAmount CMasternode::CheckOutPointValue(const COutPoint& outpoint)
 {
     AssertLockHeld(cs_main);
@@ -197,58 +178,24 @@ CAmount CMasternode::CheckOutPointValue(const COutPoint& outpoint)
 
 CMasternode::SinType CMasternode::GetSinType()
 {
-    CAmount nBurnFundValue = CheckOutPointValue(vinBurnFund.prevout);
-    
-    if ((Params().GetConsensus().nMasternodeBurnSINNODE_1 - 1) * COIN < nBurnFundValue && nBurnFundValue <= Params().GetConsensus().nMasternodeBurnSINNODE_1 * COIN) {
+    if (Params().GetConsensus().nMasternodeBurnSINNODE_1 == nBurnAmount) {
         return SINNODE_1;
     }
     
-    if ((Params().GetConsensus().nMasternodeBurnSINNODE_5 -1) * COIN < nBurnFundValue &&  nBurnFundValue <= Params().GetConsensus().nMasternodeBurnSINNODE_5 * COIN) {
+    if (Params().GetConsensus().nMasternodeBurnSINNODE_5 == nBurnAmount) {
         return SINNODE_5;
     }
     
-    if ((Params().GetConsensus().nMasternodeBurnSINNODE_10 - 1) * COIN < nBurnFundValue && nBurnFundValue <= Params().GetConsensus().nMasternodeBurnSINNODE_10 * COIN) {
+    if (Params().GetConsensus().nMasternodeBurnSINNODE_10 == nBurnAmount) {
         return SINNODE_10;
     }
     
-    return SINNODE_UNKNOWN;
-}
-
-CMasternode::SinType CMasternode::GetSinType(CAmount burnValue)
-{
-
-    if ((Params().GetConsensus().nMasternodeBurnSINNODE_1 - 1) * COIN < burnValue && burnValue <= Params().GetConsensus().nMasternodeBurnSINNODE_1 * COIN) {
-        return SINNODE_1;
-    }
-
-    if ((Params().GetConsensus().nMasternodeBurnSINNODE_5 -1) * COIN < burnValue &&  burnValue <= Params().GetConsensus().nMasternodeBurnSINNODE_5 * COIN) {
-        return SINNODE_5;
-    }
-
-    if ((Params().GetConsensus().nMasternodeBurnSINNODE_10 - 1) * COIN < burnValue && burnValue <= Params().GetConsensus().nMasternodeBurnSINNODE_10 * COIN) {
-        return SINNODE_10;
-    }
-
     return SINNODE_UNKNOWN;
 }
 
 int CMasternode::GetSinTypeInt()
 {
-    CAmount nBurnFundValue = CheckOutPointValue(vinBurnFund.prevout);
-    
-    if ((Params().GetConsensus().nMasternodeBurnSINNODE_1 - 1) * COIN < nBurnFundValue && nBurnFundValue <= Params().GetConsensus().nMasternodeBurnSINNODE_1 * COIN) {
-        return 1;
-    }
-    
-    if ((Params().GetConsensus().nMasternodeBurnSINNODE_5 -1) * COIN < nBurnFundValue &&  nBurnFundValue <= Params().GetConsensus().nMasternodeBurnSINNODE_5 * COIN) {
-        return 5;
-    }
-    
-    if ((Params().GetConsensus().nMasternodeBurnSINNODE_10 - 1) * COIN < nBurnFundValue && nBurnFundValue <= Params().GetConsensus().nMasternodeBurnSINNODE_10 * COIN) {
-        return 10;
-    }
-    
-    return 0;
+    return nSinType;
 }
 
 bool CMasternode::CanVoteForReward() {
@@ -287,52 +234,28 @@ CMasternode::CollateralStatus CMasternode::CheckCollateral(const COutPoint& outp
     return COLLATERAL_OK;
 }
 
-CMasternode::BurnFundStatus CMasternode::CheckBurnFund(const COutPoint& outpoint)
+CMasternode::BurnFundStatus CMasternode::CheckBurnFund(const COutPoint& outpoint, int nExpireHeight, CAmount nBurnAmount)
 {
     int nHeight;
-    return CheckBurnFund(outpoint, nHeight);
+    return CheckBurnFund(outpoint, nExpireHeight, nBurnAmount, nHeight);
 }
 
-CMasternode::BurnFundStatus CMasternode::CheckBurnFund(const COutPoint& outpoint, int& nHeightRet)
+CMasternode::BurnFundStatus CMasternode::CheckBurnFund(const COutPoint& outpoint, int nExpireHeight, CAmount nBurnAmount, int& nHeightRet)
 {
-    AssertLockHeld(cs_main);
-
-    Coin coin;
-    if(!GetUTXOCoin(outpoint, coin)) {
-		LogPrintf("CMasternode::CheckBurnFund -- BurnFund tx not found %s-%d\n", outpoint.hash.ToString(), outpoint.n);
-        return BURNFUND_UTXO_NOT_FOUND;
-    }
-    
-    const CTxOut& txout = coin.out;
-    CTxDestination address;
-    
-    if (!ExtractDestination(txout.scriptPubKey, address)) {
-        LogPrintf("CMasternode::BurnFundStatus -- Unknown destination of BurnFund tx\n");
-        return BURNFUND_INPUTADDRES_KO;
-    }
-    
-    if (EncodeDestination(address) != Params().GetConsensus().cBurnAddress) {
-        LogPrintf("CMasternode::BurnFundStatus -- Unknown BurnAddress\n");
-        return BURNFUND_BURNADDRESS_KO;
-    }
-    
-    nHeightRet = coin.nHeight;
-    
-    if ((chainActive.Height() - 720*365) > coin.nHeight) {
+    if (chainActive.Height() > nExpireHeight && nExpireHeight != -1) {
         LogPrintf("CMasternode::BurnFundStatus -- BurnFund tx is expired\n");
         return BURNFUND_EXPIRED;
     }
 
-    if( coin.out.nValue < (Params().GetConsensus().nMasternodeBurnSINNODE_1 - 1) * COIN ||
-        (coin.out.nValue > Params().GetConsensus().nMasternodeBurnSINNODE_1 * COIN && coin.out.nValue < (Params().GetConsensus().nMasternodeBurnSINNODE_5 -1) * COIN) ||
-        (coin.out.nValue > Params().GetConsensus().nMasternodeBurnSINNODE_5 * COIN && coin.out.nValue < (Params().GetConsensus().nMasternodeBurnSINNODE_10 - 1) * COIN) ||
-        coin.out.nValue > Params().GetConsensus().nMasternodeBurnSINNODE_10 * COIN 
+    if( nBurnAmount != Params().GetConsensus().nMasternodeBurnSINNODE_1 && 
+        nBurnAmount != Params().GetConsensus().nMasternodeBurnSINNODE_5 && 
+        nBurnAmount != Params().GetConsensus().nMasternodeBurnSINNODE_10
        ) {
-		LogPrintf("CMasternode::BurnFundStatus -- BurnFund  is %d\n", coin.out.nValue);
+		LogPrintf("CMasternode::BurnFundStatus -- BurnFund  is %d\n", nBurnAmount);
         return BURNFUND_INVALID_AMOUNT;
     }
 
-    nHeightRet = coin.nHeight;
+    nHeightRet = nExpireHeight - 720 *650;
     return BURNFUND_OK;
 }
 
@@ -415,14 +338,13 @@ void CMasternode::Check(bool fForce)
 
     //once spent, stop doing the checks
     if(IsOutpointSpent()) return;
-
+    /*
+    LogPrintf("CMasternode::Check -- BEFOR Burn[Address: %s, Amount: %d, ExpiredHeight:%d, SinType:%d, Standard:%s] / Collateral[ Address:%s, Amount: %d]\n", burnfundAddress, nBurnAmount, nExpireHeight, GetSinTypeInt(), burnTxStandard, collateralAddress, nCollateralAmount);
+    */
     int nHeight = 0;
     if(!fUnitTest) {
         TRY_LOCK(cs_main, lockMain);
         if(!lockMain) return;
-
-        //calcul all in one function for infinityNode info. We can release cs_main after this function
-        updateInfinityNodeInfo();
 
         CollateralStatus err = CheckCollateral(vin.prevout);
         if (err == COLLATERAL_UTXO_NOT_FOUND) {
@@ -431,7 +353,7 @@ void CMasternode::Check(bool fForce)
             return;
         }
 
-        BurnFundStatus errBurnFund = CheckBurnFund(vinBurnFund.prevout);
+        BurnFundStatus errBurnFund = CheckBurnFund(vinBurnFund.prevout, nExpireHeight, nBurnAmount);
         if (errBurnFund != BURNFUND_OK) {
             nActiveState = MASTERNODE_OUTPOINT_SPENT;
             LogPrint(BCLog::MASTERNODE, "CMasternode::Check -- Failed to check SIN Node BurnFund tx, masternode=%s\n", vin.prevout.ToStringShort());

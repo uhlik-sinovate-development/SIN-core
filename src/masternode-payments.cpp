@@ -911,18 +911,6 @@ bool CMasternodePayments::ProcessBlock(int nBlockHeight, CConnman& connman)
     CScript payee = GetScriptForDestination(mnInfo.pubKeyCollateralAddress.GetID());
     CMasternodePaymentVote voteNew(activeMasternode.outpoint, nBlockHeight, payee);
 
-    if(!GetUTXOCoin(mnInfo.vinBurnFund.prevout, coin)) {
-        nBurnFundValue = 0;
-    } else {
-        nBurnFundValue = coin.out.nValue;
-    }
-
-    CTxDestination address1;
-    ExtractDestination(payee, address1);
-    std::string address2 = EncodeDestination(address1);
-
-    LogPrintf("CMasternodePayments::ProcessBlock -- Masternode found by GetNextMasternodeInQueueForPayment(): vote for %s, payee=%s, burnfund %llf, nBlockHeight=%d \n", mnInfo.vin.prevout.ToStringShort(), address2, nBurnFundValue, nBlockHeight);
-
     // SIGN MESSAGE TO NETWORK WITH OUR MASTERNODE KEYS
     if (voteNew.Sign()) {
         if (AddPaymentVote(voteNew)) {

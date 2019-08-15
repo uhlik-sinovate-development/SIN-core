@@ -232,13 +232,12 @@ public:
     /*this function calcul all informations of infinityNode and update the variable which is init as "NULL" in masternode_info_t*/
     void updateInfinityNodeInfo();
 
-    bool IsBurnFundExpired(const COutPoint& outpoint);
     CAmount CheckOutPointValue(const COutPoint& outpoint);
     
     static CollateralStatus CheckCollateral(const COutPoint& outpoint);
     static CollateralStatus CheckCollateral(const COutPoint& outpoint, int& nHeightRet);
-    static BurnFundStatus CheckBurnFund(const COutPoint& outpoint);
-    static BurnFundStatus CheckBurnFund(const COutPoint& outpoint, int& nHeightRet);
+    static BurnFundStatus CheckBurnFund(const COutPoint& outpoint, int nExpireHeight, CAmount nBurnAmount);
+    static BurnFundStatus CheckBurnFund(const COutPoint& outpoint, int nExpireHeight, CAmount nBurnAmount, int& nHeightRet);
 	bool CheckCollateralBurnFundRelation(const COutPoint& outpoint, const COutPoint& outpointBurnFund);
     bool CanVoteForReward(); //I can vote or not
 
