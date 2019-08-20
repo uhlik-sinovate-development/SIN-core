@@ -535,12 +535,12 @@ UniValue masternodelist(const JSONRPCRequest& request)
                 obj.push_back(Pair(strOutpoint, strAddress));
             } else if (strMode == "full") {
                 std::ostringstream streamFull;
-		int infinityType = mn.GetSinTypeInt();
-		int rewardAtHeight = GetMasternodePayment(chainActive.Height(), infinityType) / COIN;
-		int burnAmountByType = 0;
-		if (infinityType == 1) burnAmountByType = Params().GetConsensus().nMasternodeBurnSINNODE_1;
-		if (infinityType == 5) burnAmountByType = Params().GetConsensus().nMasternodeBurnSINNODE_5;
-		if (infinityType == 10) burnAmountByType = Params().GetConsensus().nMasternodeBurnSINNODE_10;
+                int infinityType = mn.GetSinTypeInt();
+                int rewardAtHeight = GetMasternodePayment(chainActive.Height(), infinityType) / COIN;
+                int burnAmountByType = 0;
+                if (infinityType == 1) burnAmountByType = Params().GetConsensus().nMasternodeBurnSINNODE_1;
+                if (infinityType == 5) burnAmountByType = Params().GetConsensus().nMasternodeBurnSINNODE_5;
+                if (infinityType == 10) burnAmountByType = Params().GetConsensus().nMasternodeBurnSINNODE_10;
                 streamFull << std::setw(18) <<
                                mn.GetStatus() << " " <<
                                mn.nProtocolVersion << " " <<
@@ -556,12 +556,12 @@ UniValue masternodelist(const JSONRPCRequest& request)
                 obj.push_back(Pair(strOutpoint, strFull));
             } else if (strMode == "info") {
                 std::ostringstream streamInfo;
-		int infinityType = mn.GetSinTypeInt();
-		int rewardAtHeight = GetMasternodePayment(chainActive.Height(), infinityType) / COIN;
-		int burnAmountByType = 0;
-		if (infinityType == 1) burnAmountByType = Params().GetConsensus().nMasternodeBurnSINNODE_1;
-		if (infinityType == 5) burnAmountByType = Params().GetConsensus().nMasternodeBurnSINNODE_5;
-		if (infinityType == 10) burnAmountByType = Params().GetConsensus().nMasternodeBurnSINNODE_10;
+                int infinityType = mn.GetSinTypeInt();
+                int rewardAtHeight = GetMasternodePayment(chainActive.Height(), infinityType) / COIN;
+                int burnAmountByType = 0;
+                if (infinityType == 1) burnAmountByType = Params().GetConsensus().nMasternodeBurnSINNODE_1;
+                if (infinityType == 5) burnAmountByType = Params().GetConsensus().nMasternodeBurnSINNODE_5;
+                if (infinityType == 10) burnAmountByType = Params().GetConsensus().nMasternodeBurnSINNODE_10;
                 streamInfo << std::setw(18) <<
                                mn.GetStatus() << " " <<
                                mn.nProtocolVersion << " " <<

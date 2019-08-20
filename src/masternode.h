@@ -112,6 +112,15 @@ struct masternode_info_t
     int nActiveState = 0;
     int nProtocolVersion = 0;
     int64_t sigTime = 0; //mnb message time
+    //infinitynode information
+    int nSinType = -1;
+    CAmount nBurnAmount = 0;
+    CAmount nCollateralAmount = 0;
+    int nExpireHeight = -1;
+    std::string burnfundAddress = "";
+    std::string nodeBurntoAddress = "";
+    std::string collateralAddress = "";
+    std::string burnTxStandard = "nonstandard";
 
     CTxIn vin{};
     CTxIn vinBurnFund{};
@@ -221,14 +230,15 @@ public:
     arith_uint256 CalculateScore(const uint256& blockHash);
 
     bool UpdateFromNewBroadcast(CMasternodeBroadcast& mnb, CConnman& connman);
+    /*this function calcul all informations of infinityNode and update the variable which is init as "NULL" in masternode_info_t*/
+    void updateInfinityNodeInfo();
 
-    bool IsBurnFundExpired(const COutPoint& outpoint);
     CAmount CheckOutPointValue(const COutPoint& outpoint);
     
     static CollateralStatus CheckCollateral(const COutPoint& outpoint);
     static CollateralStatus CheckCollateral(const COutPoint& outpoint, int& nHeightRet);
-    static BurnFundStatus CheckBurnFund(const COutPoint& outpoint);
-    static BurnFundStatus CheckBurnFund(const COutPoint& outpoint, int& nHeightRet);
+    static BurnFundStatus CheckBurnFund(const COutPoint& outpoint, int nExpireHeight, CAmount nBurnAmount);
+    static BurnFundStatus CheckBurnFund(const COutPoint& outpoint, int nExpireHeight, CAmount nBurnAmount, int& nHeightRet);
 	bool CheckCollateralBurnFundRelation(const COutPoint& outpoint, const COutPoint& outpointBurnFund);
     bool CanVoteForReward(); //I can vote or not
 
@@ -383,7 +393,6 @@ public:
     bool SimpleCheck(int& nDos);
     bool Update(CMasternode* pmn, int& nDos, CConnman& connman);
     bool CheckOutpoint(int& nDos);
-
     bool Sign(const CKey& keyCollateralAddress);
     bool CheckSignature(int& nDos);
     void Relay(CConnman& connman);

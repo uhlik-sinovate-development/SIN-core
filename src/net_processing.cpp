@@ -87,6 +87,7 @@ struct COrphanTx {
     int64_t nTimeExpire;
 };
 static CCriticalSection g_cs_orphans;
+CCriticalSection cs_mapMasternodePaymentVotesNet;
 std::map<uint256, COrphanTx> mapOrphanTransactions GUARDED_BY(g_cs_orphans);
 
 void EraseOrphansFor(NodeId peer);
@@ -1094,7 +1095,10 @@ bool static AlreadyHave(const CInv& inv) EXCLUSIVE_LOCKS_REQUIRED(cs_main)
         return mapSporks.count(inv.hash);
 
     case MSG_MASTERNODE_PAYMENT_VOTE:
+        {
+        LOCK(cs_mapMasternodePaymentVotesNet);
         return mnpayments.mapMasternodePaymentVotes.count(inv.hash);
+        }
 
     case MSG_MASTERNODE_PAYMENT_BLOCK:
         {
@@ -2397,7 +2401,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
             return true;
         }
 
-//        LOCK(cs_main);
+        LOCK(cs_main);
 //        if (IsInitialBlockDownload() && !pfrom->fWhitelisted) {
 //            LogPrint(BCLog::NET, "Ignoring getheaders from peer=%d because node is in initial block download\n", pfrom->GetId());
 //            return true;

@@ -74,9 +74,7 @@ CMasternodeMan::CMasternodeMan()
 bool CMasternodeMan::Add(CMasternode &mn)
 {
     LOCK(cs);
-
     if (Has(mn.vin.prevout)) return false;
-
     LogPrint(BCLog::MASTERNODE, "CMasternodeMan::Add -- Adding new Masternode: addr=%s, %i now\n", mn.addr.ToString(), size() + 1);
     mapMasternodes[mn.vin.prevout] = mn;
     fMasternodesAdded = true;
@@ -156,8 +154,11 @@ void CMasternodeMan::Check()
 
     LogPrint(BCLog::MASTERNODE, "CMasternodeMan::Check -- nLastWatchdogVoteTime=%d, IsWatchdogActive()=%d\n", nLastWatchdogVoteTime, IsWatchdogActive());
 
-    for (auto& mnpair : mapMasternodes) {
-        mnpair.second.Check();
+    std::map<COutPoint, CMasternode>::iterator it = mapMasternodes.begin();
+    while (it != mapMasternodes.end()) {
+        it->second.updateInfinityNodeInfo();
+        it->second.Check();
+        ++it;
     }
 }
 
@@ -191,7 +192,7 @@ void CMasternodeMan::CheckAndRemoveBurnFundNotUniqueNode(CConnman& connman)
                     CMasternode mnb = mnpair.second;
                     LogPrint(BCLog::MASTERNODE, "CMasternodeMan::CheckAndRemoveBurnFundNotUniqueNode -- burntx %s size %d find %d\n", 
                                 mnb.vinBurnFund.prevout.ToString(), nBurnFundMap.size(), nBurnFundMap.count(mnb.vinBurnFund.prevout));
-                    if (nBurnFundMap.count(mnb.vinBurnFund.prevout) > 0) {
+                    if (nBurnFundMap.count(mnb.vinBurnFund.prevout) > 1) {
                         // conflict situation with someone else, choose older sigtime
                             LogPrint(BCLog::MASTERNODE, "CMasternodeMan::CheckAndRemoveBurnFundNotUniqueNode -- burntx detected %s\n", mnb.vinBurnFund.prevout.ToStringShort());
                             CMasternode candidate = nBurnFundMap.find(mnb.vinBurnFund.prevout)->second;
@@ -232,10 +233,7 @@ void CMasternodeMan::CheckAndRemoveBurnFundNotUniqueNode(CConnman& connman)
                                 bool absolute = false;
                                 connman.Ban(pnode->addr, BanReasonManuallyAdded, banTime, absolute);
                                 LogPrint(BCLog::MASTERNODE, "CMasternodeMan::CheckAndRemoveBurnFundNotUniqueNode -- banned\n");
-								/*
-                                LogPrint(BCLog::MASTERNODE, "CMasternodeMan::CheckAndRemoveBurnFundNotUniqueNode -- reusing dest node: peer=%d addr=%s nRefCount=%d fNetworkNode=%$",pnode->GetId(), pnode->addr.ToString(), pnode->GetRefCount(), pnode->fNetworkNode, pnode->fInbound, pnode->fMasternode);                      }
-								*/
-						}
+                        }
                     }
                 }
                 // looped through all nodes, release them
@@ -579,21 +577,6 @@ void CMasternodeMan::LocalDiagnostic(int nBlockHeight, int& nSINNODE_1Ret, int& 
     nSINNODE_1Ret = 0; nSINNODE_5Ret = 0; nSINNODE_10Ret = 0;
     
     for (auto& mnpair : mapMasternodes) {
-		/*
-        if(!mnpair.second.IsValidForPayment()) continue;
-        
-        //check protocol version
-        if(mnpair.second.nProtocolVersion < mnpayments.GetMinMasternodePaymentsProto()) continue;
-
-        //it's in the list (up to 8 entries ahead of current block to allow propagation) -- so let's skip it
-        if(mnpayments.IsScheduled(mnpair.second, nBlockHeight)) continue;
-
-        //it's too new, wait for a cycle
-        if(mnpair.second.sigTime + (nMnCount*2.6*60) > GetAdjustedTime()) continue;
-
-        //make sure it has at least as many confirmations as there are masternodes
-        if(GetUTXOConfirmations(mnpair.first) < nMnCount) continue;
-        */
         //found SINNODE_1 in network
         if (mnpair.second.GetSinType() == CMasternode::SinType::SINNODE_1) {
             nSINNODE_1Ret = 1;
@@ -705,9 +688,10 @@ masternode_info_t CMasternodeMan::FindRandomNotInVec(const std::vector<COutPoint
 
     int nCountEnabled = CountEnabled(nProtocolVersion);
     int nCountNotExcluded = nCountEnabled - vecToExclude.size();
-
+/*
     LogPrintf("CMasternodeMan::FindRandomNotInVec -- %d enabled masternodes, %d masternodes to choose from\n", nCountEnabled, nCountNotExcluded);
-    if(nCountNotExcluded < 1) return masternode_info_t();
+*/
+if(nCountNotExcluded < 1) return masternode_info_t();
 
     // fill a vector of pointers
     std::vector<CMasternode*> vpMasternodesShuffled;
@@ -996,14 +980,13 @@ void CMasternodeMan::ProcessMessage(CNode* pfrom, const std::string& strCommand,
             mapSeenMasternodePing.insert(std::make_pair(hashMNP, mnp));
 
             if (vin.prevout == mnpair.first) {
-                LogPrintf("DSEG -- Sent 1 Masternode inv to peer %d\n", pfrom->GetId());
                 return;
             }
         }
 
         if(vin == CTxIn()) {
             connman.PushMessage(pfrom, CNetMsgMaker(pfrom->GetSendVersion()).Make(NetMsgType::SYNCSTATUSCOUNT, MASTERNODE_SYNC_LIST, nInvCount));
-            LogPrintf("DSEG -- Sent %d Masternode invs to peer %d\n", nInvCount, pfrom->GetId());
+            /*LogPrintf("DSEG -- Sent %d Masternode invs to peer %d\n", nInvCount, pfrom->GetId());*/
             return;
         }
         // smth weird happen - someone asked us for vin we have no idea about?
