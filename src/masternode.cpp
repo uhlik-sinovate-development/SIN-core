@@ -106,13 +106,19 @@ void CMasternode::updateInfinityNodeInfo()
     }
 
     if(!GetUTXOCoin(vin.prevout, coinCollateral)) {
-		LogPrintf("CMasternode::updateInfinityNodeInfo -- BurnFund tx not found %s-%d\n", vin.prevout.hash.ToString(), vin.prevout.n);
+        LogPrintf("CMasternode::updateInfinityNodeInfo -- BurnFund tx not found %s-%d\n", vin.prevout.hash.ToString(), vin.prevout.n);
         return;
     }
 
     CTxDestination addressCollateral;
     if (!ExtractDestination(coinCollateral.out.scriptPubKey, addressCollateral)) {
         LogPrintf("CMasternode::updateInfinityNodeInfo -- Unknown destination of BurnFund tx\n");
+        return;
+    }
+
+    CTxDestination addressBurnNode;
+    if (!ExtractDestination(coinBurnFund.out.scriptPubKey, addressBurnNode)) {
+        LogPrintf("CMasternode::updateInfinityNodeInfo -- Unknown destination of addressBurnNode tx\n");
         return;
     }
 
@@ -149,6 +155,7 @@ void CMasternode::updateInfinityNodeInfo()
     if (nBurnAmount >=100000) {nSinType = nBurnAmount / 100000;}
     else { nSinType = nBurnAmount;}
     burnfundAddress = EncodeDestination(addressBurnFund);
+    nodeBurntoAddress = EncodeDestination(addressBurnNode);
 }
 
 
@@ -251,7 +258,7 @@ CMasternode::BurnFundStatus CMasternode::CheckBurnFund(const COutPoint& outpoint
         nBurnAmount != Params().GetConsensus().nMasternodeBurnSINNODE_5 && 
         nBurnAmount != Params().GetConsensus().nMasternodeBurnSINNODE_10
        ) {
-		LogPrintf("CMasternode::BurnFundStatus -- BurnFund  is %d\n", nBurnAmount);
+        LogPrintf("CMasternode::BurnFundStatus -- BurnFund  is %d\n", nBurnAmount);
         return BURNFUND_INVALID_AMOUNT;
     }
 
@@ -261,62 +268,12 @@ CMasternode::BurnFundStatus CMasternode::CheckBurnFund(const COutPoint& outpoint
 
 bool CMasternode::CheckCollateralBurnFundRelation(const COutPoint& outpoint, const COutPoint& outpointBurnFund)
 {
-    AssertLockHeld(cs_main);
-
-    Coin coin;
-    if(!GetUTXOCoin(outpoint, coin)) {
-		LogPrintf("CMasternode::CheckCollateralBurnFundRelation -- Check Collateral tx not found %s-%d\n", outpoint.hash.ToString(), outpoint.n);
-        return false;
-    }
-
-    const CTxOut& txoutCollateral = coin.out;
-    CTxDestination addressCollateral;
-
-    if (!ExtractDestination(txoutCollateral.scriptPubKey, addressCollateral)) {
-        LogPrintf("CMasternode::CheckCollateralBurnFundRelation -- Unknown destination of BurnFund tx.\n");
-        return false;
-    }
-
-    Coin BurnFundcoin;
-    if(!GetUTXOCoin(outpointBurnFund, BurnFundcoin)) {
-		LogPrintf("CMasternode::CheckCollateralBurnFundRelation -- Check Collateral tx not found %s-%d\n", outpointBurnFund.hash.ToString(), outpointBurnFund.n);
-        return false;
-    }
-
-    const CTxOut& txout = BurnFundcoin.out;
-    CTxDestination address;
-
-    if (!ExtractDestination(txout.scriptPubKey, address)) {
-        LogPrintf("CMasternode::CheckCollateralBurnFundRelation -- Unknown destination of BurnFund tx.\n");
-        return false;
-    }
-
-    if (EncodeDestination(address) != Params().GetConsensus().cBurnAddress) {
+    if (nodeBurntoAddress != Params().GetConsensus().cBurnAddress) {
         LogPrintf("CMasternode::CheckCollateralBurnFundRelation -- BurnFund address is diffrent with BurnAddress in consensus.\n");
         return false;
     }
 
-    CTransactionRef tx;
-    uint256 hashblock;
-    if(!GetTransaction(outpointBurnFund.hash, tx, Params().GetConsensus(), hashblock, false)) {
-        LogPrintf("CMasternode::CheckCollateralBurnFundRelation -- BurnFund tx is not in block");
-        return false;
-    }
-    const CTxIn& txin = tx->vin[0];
-    int index = txin.prevout.n;
-
-    CTransactionRef prevtx;
-    if(!GetTransaction(txin.prevout.hash, prevtx, Params().GetConsensus(), hashblock, false)) {
-        LogPrintf("CMasternode::CheckCollateralBurnFundRelation -- PrevBurnFund tx is not in block");
-        return false;
-    }
-
-    CTxDestination senderAddress;
-    if(!ExtractDestination(prevtx->vout[index].scriptPubKey, senderAddress)){
-        return false;
-    }
-
-    if ( senderAddress != addressCollateral ) {
+    if ( burnfundAddress != collateralAddress ) {
         LogPrintf("CMasternode::CheckCollateralBurnFundRelation -- ERROR: Pubkey address of input BurnFund tx and Collateral address is different.\n");
         return false;
     }
@@ -338,9 +295,9 @@ void CMasternode::Check(bool fForce)
 
     //once spent, stop doing the checks
     if(IsOutpointSpent()) return;
-    /*
-    LogPrintf("CMasternode::Check -- BEFOR Burn[Address: %s, Amount: %d, ExpiredHeight:%d, SinType:%d, Standard:%s] / Collateral[ Address:%s, Amount: %d]\n", burnfundAddress, nBurnAmount, nExpireHeight, GetSinTypeInt(), burnTxStandard, collateralAddress, nCollateralAmount);
-    */
+/*
+    LogPrintf("CMasternode::Check -- BEFOR Burn[burnfundAddress: %s, Amount: %d, nodeBurnAddress: %s, ExpiredHeight:%d, SinType:%d, Standard:%s] / Collateral[ Address:%s, Amount: %d]\n", burnfundAddress, nBurnAmount, nodeBurntoAddress, nExpireHeight, GetSinTypeInt(), burnTxStandard, collateralAddress, nCollateralAmount);
+*/
     int nHeight = 0;
     if(!fUnitTest) {
         TRY_LOCK(cs_main, lockMain);
@@ -1051,6 +1008,7 @@ bool CMasternodePing::CheckAndUpdate(CMasternode* pmn, bool fFromNewBroadcast, i
     }
 
     // force update, ignoring cache
+    pmn->updateInfinityNodeInfo();
     pmn->Check(true);
     // relay ping for nodes in ENABLED/EXPIRED/WATCHDOG_EXPIRED state only, skip everyone else
     if (!pmn->IsEnabled() && !pmn->IsExpired() && !pmn->IsWatchdogExpired()) return false;

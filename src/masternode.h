@@ -118,6 +118,7 @@ struct masternode_info_t
     CAmount nCollateralAmount = 0;
     int nExpireHeight = -1;
     std::string burnfundAddress = "";
+    std::string nodeBurntoAddress = "";
     std::string collateralAddress = "";
     std::string burnTxStandard = "nonstandard";
 
