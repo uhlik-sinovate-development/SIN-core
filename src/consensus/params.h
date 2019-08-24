@@ -67,6 +67,9 @@ struct Params {
     int nMasternodeBurnSINNODE_1; // in coins
     int nMasternodeBurnSINNODE_5; // in coins
     int nMasternodeBurnSINNODE_10; // in coins
+    int nLimitSINNODE_1;// integer
+    int nLimitSINNODE_5;// integer
+    int nLimitSINNODE_10;// integer
 
     int nInstantSendKeepLock; // in blocks
 
