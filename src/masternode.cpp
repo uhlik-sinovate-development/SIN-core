@@ -298,6 +298,7 @@ void CMasternode::Check(bool fForce)
 /*
     LogPrintf("CMasternode::Check -- BEFOR Burn[burnfundAddress: %s, Amount: %d, nodeBurnAddress: %s, ExpiredHeight:%d, SinType:%d, Standard:%s] / Collateral[ Address:%s, Amount: %d]\n", burnfundAddress, nBurnAmount, nodeBurntoAddress, nExpireHeight, GetSinTypeInt(), burnTxStandard, collateralAddress, nCollateralAmount);
 */
+    updateInfinityNodeInfo();
     int nHeight = 0;
     if(!fUnitTest) {
         TRY_LOCK(cs_main, lockMain);
@@ -1008,7 +1009,6 @@ bool CMasternodePing::CheckAndUpdate(CMasternode* pmn, bool fFromNewBroadcast, i
     }
 
     // force update, ignoring cache
-    pmn->updateInfinityNodeInfo();
     pmn->Check(true);
     // relay ping for nodes in ENABLED/EXPIRED/WATCHDOG_EXPIRED state only, skip everyone else
     if (!pmn->IsEnabled() && !pmn->IsExpired() && !pmn->IsWatchdogExpired()) return false;

@@ -501,6 +501,9 @@ void ThreadCheckPrivateSend(CConnman& connman)
                 mnodeman.ProcessMasternodeConnections(connman);
                 mnodeman.CheckAndRemove(connman);
                 mnodeman.CheckAndRemoveBurnFundNotUniqueNode(connman);
+                mnodeman.CheckAndRemoveLimitNumberNode(connman, 1, Params().GetConsensus().nLimitSINNODE_1);
+                mnodeman.CheckAndRemoveLimitNumberNode(connman, 5, Params().GetConsensus().nLimitSINNODE_5);
+                mnodeman.CheckAndRemoveLimitNumberNode(connman, 10, Params().GetConsensus().nLimitSINNODE_10);
                 //mnodeman.WarnMasternodeDaemonUpdates();
                 mnpayments.CheckAndRemove();
                 instantsend.CheckAndRemove();

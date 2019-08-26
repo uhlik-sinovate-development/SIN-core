@@ -33,6 +33,15 @@ struct CompareLastPaidBlock
     }
 };
 
+struct CompareSigTime
+{
+    bool operator()(const std::pair<int64_t, CMasternode*>& t1,
+                    const std::pair<int64_t, CMasternode*>& t2) const
+    {
+        return (t1.first != t2.first) ? (t1.first < t2.first) : (t1.second->vin < t2.second->vin);
+    }
+};
+
 struct CompareScoreMN
 {
     bool operator()(const std::pair<arith_uint256, CMasternode*>& t1,
@@ -213,6 +222,7 @@ void CMasternodeMan::CheckAndRemoveBurnFundNotUniqueNode(CConnman& connman)
                         //new masternode with unique burntx. So add him
                         nBurnFundMap.insert(std::pair<COutPoint, CMasternode>(mnb.vinBurnFund.prevout, mnb));
                     }
+                    //add node in vector and check nLimitNode to ban
             }
             //Ban node
             LogPrint(BCLog::MASTERNODE, "CMasternodeMan::CheckAndRemoveBurnFundNotUniqueNode -- ban vector %d\n",(int)vpMasternodesToBan.size());
@@ -222,6 +232,14 @@ void CMasternodeMan::CheckAndRemoveBurnFundNotUniqueNode(CConnman& connman)
                 for (auto pmn : vpMasternodesToBan) {
                     std::map<COutPoint, CMasternode>::iterator it;
                     it = mapMasternodes.find(pmn.vin.prevout);
+
+                    CMasternodeBroadcast mnb = CMasternodeBroadcast(it->second);
+                    uint256 hash = mnb.GetHash();
+                    // erase all of the broadcasts we've seen from this txin, ...
+                    mapSeenMasternodeBroadcast.erase(hash);
+                    mWeAskedForMasternodeListEntry.erase(pmn.vin.prevout);
+                    // and finally remove it from the list
+                    it->second.FlagGovernanceItemsAsDirty();
                     mapMasternodes.erase(it);
 
                     LogPrint(BCLog::MASTERNODE, "CMasternodeMan::CheckAndRemoveBurnFundNotUniqueNode -- banning...%s\n", pmn.addr.ToString());
@@ -242,6 +260,55 @@ void CMasternodeMan::CheckAndRemoveBurnFundNotUniqueNode(CConnman& connman)
             }
     }
 }
+
+void CMasternodeMan::CheckAndRemoveLimitNumberNode(CConnman& connman, int nSinType, int nLimit)
+{
+    if(!masternodeSync.IsMasternodeListSynced()) return;
+
+    std::vector<std::pair<int64_t, CMasternode*> > vecSigTimeType;
+    std::vector<CMasternode> vpMasternodesToBan; //list node will be banned
+
+    for (auto& mnpair : mapMasternodes) {
+        if (mnpair.second.GetSinTypeInt() == nSinType) {
+            vecSigTimeType.push_back(std::make_pair(mnpair.second.sigTime, &mnpair.second));
+        }
+    }
+
+    // Sort them low to high
+    sort(vecSigTimeType.begin(), vecSigTimeType.end(), CompareSigTime());
+
+    if (vecSigTimeType.size() <= nLimit) return;
+
+	int count=0;
+    for (std::pair<int64_t, CMasternode*>& p : vecSigTimeType){
+        count++;
+        if (count >= nLimit) {
+            CMasternode mn = *p.second;
+            vpMasternodesToBan.push_back(mn);
+        }
+    }
+
+    if ((int)vpMasternodesToBan.size() > 0) {
+        LogPrint(BCLog::MASTERNODE, "CMasternodeMan::CheckAndRemoveBurnFundNotUniqueNode -- removing...\n");
+        std::vector<CNode*> vNodesCopy = connman.CopyNodeVector();
+        for (auto pmn : vpMasternodesToBan) {
+            std::map<COutPoint, CMasternode>::iterator it;
+            it = mapMasternodes.find(pmn.vin.prevout);
+
+            CMasternodeBroadcast mnb = CMasternodeBroadcast(it->second);
+            uint256 hash = mnb.GetHash();
+            // erase all of the broadcasts we've seen from this txin, ...
+            mapSeenMasternodeBroadcast.erase(hash);
+            mWeAskedForMasternodeListEntry.erase(pmn.vin.prevout);
+            // and finally remove it from the list
+            it->second.FlagGovernanceItemsAsDirty();
+            mapMasternodes.erase(it);
+        }
+
+        NotifyMasternodeUpdates(connman);
+    }
+}
+
 
 void CMasternodeMan::CheckAndRemove(CConnman& connman)
 {
@@ -461,6 +528,19 @@ int CMasternodeMan::CountEnabled(int nProtocolVersion)
 
     for (auto& mnpair : mapMasternodes) {
         if(mnpair.second.nProtocolVersion < nProtocolVersion || !mnpair.second.IsEnabled()) continue;
+        nCount++;
+    }
+
+    return nCount;
+}
+
+int CMasternodeMan::CountSinType(int nSinType)
+{
+    LOCK(cs);
+    int nCount = 0;
+
+    for (auto& mnpair : mapMasternodes) {
+        if(mnpair.second.GetSinTypeInt() != nSinType) continue;
         nCount++;
     }
 

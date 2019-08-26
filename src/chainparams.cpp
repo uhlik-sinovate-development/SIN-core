@@ -82,14 +82,16 @@ public:
         strNetworkID = "main";
         consensus.nSubsidyHalvingInterval = 210000;
         consensus.nMasternodeMinimumConfirmations = 15;
-	    consensus.nMasternodePaymentsStartBlock = 50;
+        consensus.nMasternodePaymentsStartBlock = 50;
         consensus.nMasternodePaymentsIncreaseBlock = 50;
         consensus.nMasternodePaymentsIncreasePeriod = 365 * 1440; // 1 common year
         consensus.nMasternodeCollateralMinimum = 10000;
-		consensus.nMasternodeBurnSINNODE_1 = 100000;
-		consensus.nMasternodeBurnSINNODE_5 = 500000;
-		consensus.nMasternodeBurnSINNODE_10 = 1000000;
-		
+        consensus.nMasternodeBurnSINNODE_1 = 100000;
+        consensus.nMasternodeBurnSINNODE_5 = 500000;
+        consensus.nMasternodeBurnSINNODE_10 = 1000000;
+        consensus.nLimitSINNODE_1=375;
+        consensus.nLimitSINNODE_5=375;
+        consensus.nLimitSINNODE_10=375;
         consensus.nInstantSendKeepLock = 24;
 
         consensus.nBudgetPaymentsStartBlock = 365 * 1440; // 1 common year
@@ -206,13 +208,16 @@ public:
         strNetworkID = "test";
         consensus.nSubsidyHalvingInterval = 210000;
         consensus.nMasternodeMinimumConfirmations = 15;
-	    consensus.nMasternodePaymentsStartBlock = 50;
+        consensus.nMasternodePaymentsStartBlock = 50;
         consensus.nMasternodePaymentsIncreaseBlock = 50;
         consensus.nMasternodePaymentsIncreasePeriod = 365 * 1440; // 1 common year
         consensus.nMasternodeCollateralMinimum = 10;
-		consensus.nMasternodeBurnSINNODE_1 = 100;
-		consensus.nMasternodeBurnSINNODE_5 = 500;
-		consensus.nMasternodeBurnSINNODE_10 = 1000;
+        consensus.nMasternodeBurnSINNODE_1 = 100;
+        consensus.nMasternodeBurnSINNODE_5 = 500;
+        consensus.nMasternodeBurnSINNODE_10 = 1000;
+        consensus.nLimitSINNODE_1=20;
+        consensus.nLimitSINNODE_5=20;
+        consensus.nLimitSINNODE_10=20;
         consensus.nInstantSendKeepLock = 24;
         consensus.nBudgetPaymentsStartBlock = 365 * 1440; // 1 common year
         consensus.nBudgetPaymentsCycleBlocks = 10958; // weekly
@@ -322,6 +327,9 @@ public:
         consensus.nMasternodeBurnSINNODE_1 = 100;
         consensus.nMasternodeBurnSINNODE_5 = 500;
         consensus.nMasternodeBurnSINNODE_10 = 1000;
+        consensus.nLimitSINNODE_1=20;
+        consensus.nLimitSINNODE_5=20;
+        consensus.nLimitSINNODE_10=20;
         consensus.nInstantSendKeepLock = 24;
         consensus.nBudgetPaymentsStartBlock = 365 * 1440; // 1 common year
         consensus.nBudgetPaymentsCycleBlocks = 10958; // weekly
