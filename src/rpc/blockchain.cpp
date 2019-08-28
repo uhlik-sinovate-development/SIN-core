@@ -1092,20 +1092,20 @@ static bool GetTimeLockedStats(CCoinsView *view, CTermDepositStats &stats)
     std::unique_ptr<CCoinsViewCursor> pcursor(view->Cursor());
     assert(pcursor);
 
-	uint256 prevkey;
-	std::map<uint32_t, Coin> outputs;
-	std::set<uint160> addresses;
+    uint256 prevkey;
+    std::map<uint32_t, Coin> outputs;
+    std::set<uint160> addresses;
 
 	while (pcursor->Valid()) {
         boost::this_thread::interruption_point();
         COutPoint key;
         Coin coin;
         if (pcursor->GetKey(key) && pcursor->GetValue(coin)) {
-			if (!outputs.empty() && key.hash != prevkey) {
-				ApplyTimeLockedStats(stats, addresses, outputs);
+            if (!outputs.empty() && key.hash != prevkey) {
+                ApplyTimeLockedStats(stats, addresses, outputs);
                 outputs.clear();
-			}
-			prevkey = key.hash;
+            }
+            prevkey = key.hash;
             outputs[key.n] = std::move(coin);
         } else {
             return error("%s: unable to read value", __func__);
@@ -1128,7 +1128,7 @@ if (request.fHelp || request.params.size() != 0)
             "\nReturns the stats of all term deposits\n"
             "\nResult:\n"
             "[\n"
-			"  \"nAddress\"  (Number) number of address\n"
+            "  \"nAddress\"  (Number) number of address\n"
             "  \"nTimeLockedTxs\"  (Number) the total number of TimeLocked Tx\n"
             "  \"nTotalTimeLockedValue\"  (number) the total SIN locked on all wallets\n"
             "]\n"
@@ -1142,29 +1142,27 @@ if (request.fHelp || request.params.size() != 0)
 
     CTermDepositStats stats;
     FlushStateToDisk();
-	if (GetTimeLockedStats(pcoinsdbview.get(), stats)) {
-		UniValue obj(UniValue::VOBJ);
+    if (GetTimeLockedStats(pcoinsdbview.get(), stats)) {
+        UniValue obj(UniValue::VOBJ);
         ret.pushKV("nAddress", (int)stats.nAddress);
         ret.pushKV("nTimeLockedTxs", (int64_t)stats.nTransactions);
         ret.pushKV("nTotalTimeLockedValue", ValueFromAmount(stats.nTotalAmount));
 
-		obj.pushKV("1day", ValueFromAmount(stats.n1day));
-		obj.pushKV("2days", ValueFromAmount(stats.n2days));
-		obj.pushKV("7days", ValueFromAmount(stats.n7days));
-		obj.pushKV("14days", ValueFromAmount(stats.n14days));
-		obj.pushKV("30days", ValueFromAmount(stats.n30days));
-		obj.pushKV("More30days", ValueFromAmount(stats.nMore30days));
-		distribution.push_back(obj);
+        obj.pushKV("1day", ValueFromAmount(stats.n1day));
+        obj.pushKV("2days", ValueFromAmount(stats.n2days));
+        obj.pushKV("7days", ValueFromAmount(stats.n7days));
+        obj.pushKV("14days", ValueFromAmount(stats.n14days));
+        obj.pushKV("30days", ValueFromAmount(stats.n30days));
+        obj.pushKV("More30days", ValueFromAmount(stats.nMore30days));
+        distribution.push_back(obj);
 
-		ret.pushKV("nBurnFee", ValueFromAmount(stats.nBurnFee));
-		ret.pushKV("nBurnNode", ValueFromAmount(stats.nBurnNode));
-
-		ret.pushKV("distribution", distribution);
-
+        ret.pushKV("nBurnFee", ValueFromAmount(stats.nBurnFee));
+        ret.pushKV("nBurnNode", ValueFromAmount(stats.nBurnNode));
+        ret.pushKV("distribution", distribution);
     } else {
         throw JSONRPCError(RPC_INTERNAL_ERROR, "Unable to read UTXO set");
     }
-	return ret;
+    return ret;
 }
 
 UniValue gettxout(const JSONRPCRequest& request)
