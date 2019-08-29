@@ -58,11 +58,8 @@ struct BIP9Deployment {
 struct Params {
     uint256 hashGenesisBlock;
     int nSubsidyHalvingInterval;
-
     int nMasternodeMinimumConfirmations;
     int nMasternodePaymentsStartBlock;
-    int nMasternodePaymentsIncreaseBlock;
-    int nMasternodePaymentsIncreasePeriod; // in blocks
     int nMasternodeCollateralMinimum; // in coins
     int nMasternodeBurnSINNODE_1; // in coins
     int nMasternodeBurnSINNODE_5; // in coins
