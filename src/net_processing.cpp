@@ -1339,9 +1339,9 @@ void static ProcessGetData(CNode* pfrom, const CChainParams& chainparams, CConnm
     {
         LOCK(cs_main);
 
-		while (it != pfrom->vRecvGetData.end() && !(it->type == MSG_BLOCK || 
-													it->type == MSG_FILTERED_BLOCK || 
-													it->type == MSG_CMPCT_BLOCK || it->type == MSG_WITNESS_BLOCK))			
+        while (it != pfrom->vRecvGetData.end() && !(it->type == MSG_BLOCK || 
+                                                    it->type == MSG_FILTERED_BLOCK || 
+                                                    it->type == MSG_CMPCT_BLOCK || it->type == MSG_WITNESS_BLOCK))
         {
             if (interruptMsgProc)
                 return;
@@ -1378,18 +1378,23 @@ void static ProcessGetData(CNode* pfrom, const CChainParams& chainparams, CConnm
 				}
           } else {
           // Dash
-            	{
-				LogPrint(BCLog::NET, "ProcessGetData -- Node message type in protocol: %d\n", inv.type);
+             {
+                LogPrint(BCLog::NET, "ProcessGetData -- message from infinity node protocol: %d like InstantSend PrivateSend\n", inv.type);
                 // Send stream from relay memory
                 bool pushed = false;
                 {
                     CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
                     {
                         LOCK(cs_mapRelayDash);
+                        LogPrint(BCLog::NET, "ProcessGetData --InstantSend PrivateSend mapRelayDash: %s \n", mapRelayDash.size());
                         map<CInv, CDataStream>::iterator mi = mapRelayDash.find(inv);
                         if (mi != mapRelayDash.end()) {
                             ss += (*mi).second;
                             pushed = true;
+                            if ((*mi).first.type == MSG_TXLOCK_REQUEST){
+                                LogPrint(BCLog::NET, "CConnman::InstantSend -- PushInventory node: peer=%d addr=%s nRefCount=%d fNetworkNode=%d fInbound=%d fMasternode=%d\n",                                                                                    
+                    pfrom->GetId(), pfrom->addr.ToString(), pfrom->GetRefCount(), pfrom->fNetworkNode, pfrom->fInbound, pfrom->fMasternode);
+                            }
                         }
                     }
                     if(pushed)

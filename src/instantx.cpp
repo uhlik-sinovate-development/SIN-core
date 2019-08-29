@@ -486,7 +486,10 @@ bool CInstantSend::IsEnoughOrphanVotesForTxAndOutPoint(const uint256& txHash, co
 
 void CInstantSend::TryToFinalizeLockCandidate(const CTxLockCandidate& txLockCandidate)
 {
-    if(!sporkManager.IsSporkActive(SPORK_2_INSTANTSEND_ENABLED)) return;
+    if(!sporkManager.IsSporkActive(SPORK_2_INSTANTSEND_ENABLED)){
+        LogPrint(BCLog::INSTANTSEND, "CInstantSend::TryToFinalizeLockCandidate -- SPORK is \n");
+        return;
+    }
 
     LOCK(cs_main);
 #ifdef ENABLE_WALLET
