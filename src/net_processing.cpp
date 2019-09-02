@@ -1380,6 +1380,9 @@ void static ProcessGetData(CNode* pfrom, const CChainParams& chainparams, CConnm
           // Dash
              {
                 LogPrint(BCLog::NET, "ProcessGetData -- message from infinity node protocol: %d like InstantSend PrivateSend\n", inv.type);
+                {
+                    connman->AddDirectInfinitynode(pfrom);
+                }
                 // Send stream from relay memory
                 bool pushed = false;
                 {

@@ -5,6 +5,7 @@
 // Copyright (c) 2018-2019 SIN developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #if defined(HAVE_CONFIG_H)
 #include <config/sin-config.h>
@@ -2703,15 +2704,17 @@ bool CConnman::RemoveAddedNode(const std::string& strNode)
     return false;
 }
 
-bool CConnman::AddPendingMasternode(const CService& service)
+bool CConnman::AddDirectInfinitynode(CNode* pnode)
 {
-    LOCK(cs_vPendingMasternodes);
-    for(std::vector<CService>::const_iterator it = vPendingMasternodes.begin(); it != vPendingMasternodes.end(); ++it) {
-        if (service == *it)
+    LogPrintf("NET:: number infinity node connections: %d\n",vDirectInfinityNodes.size());
+    LOCK(cs_vDirectInfinityNodes);
+    for(std::vector<CNode*>::const_iterator it = vDirectInfinityNodes.begin(); it != vDirectInfinityNodes.end(); ++it) {
+        if (pnode == *it)
             return false;
     }
 
-    vPendingMasternodes.push_back(service);
+    LogPrintf("NET:: number infinity node connections: %d\n",vDirectInfinityNodes.size());
+    vDirectInfinityNodes.push_back(pnode);
     return true;
 }
 
