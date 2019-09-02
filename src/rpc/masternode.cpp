@@ -918,12 +918,12 @@ static UniValue infinitynodeburnfund(const JSONRPCRequest& request)
     pwallet->BlockUntilSyncedToCurrentChain();
 	
     if(!masternodeSync.IsMasternodeListSynced())
-	{
+    {
         throw JSONRPCError(RPC_TYPE_ERROR, "Please wait until InfinityNode data is synced!");
     }
 
-    if (mnodeman.CountSinType(1) >= Params().GetConsensus().nLimitSINNODE_1 ||
-        mnodeman.CountSinType(5) >= Params().GetConsensus().nLimitSINNODE_5 ||
+    if (mnodeman.CountSinType(1) >= Params().GetConsensus().nLimitSINNODE_1 &&
+        mnodeman.CountSinType(5) >= Params().GetConsensus().nLimitSINNODE_5 &&
         mnodeman.CountSinType(10) >= Params().GetConsensus().nLimitSINNODE_10)
     {
         throw JSONRPCError(RPC_TYPE_ERROR, "Number of SINNODE is FULL");
