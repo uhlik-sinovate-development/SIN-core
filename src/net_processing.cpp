@@ -2511,7 +2511,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
 
         // Dash
         // Process custom logic, no matter if tx will be accepted to mempool later or not
-        if (strCommand == NetMsgType::TXLOCKREQUEST || fTryAutoLock) {
+        if (strCommand == NetMsgType::TXLOCKREQUEST || (fTryAutoLock && fMasterNode)) {
             if(!instantsend.ProcessTxLockRequest(txLockRequest, *connman)) {
                 LogPrint(BCLog::INSTANTSEND, "TXLOCKREQUEST -- failed %s\n", txLockRequest.GetHash().ToString());
                 if (!fTryAutoLock) {
@@ -2561,7 +2561,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
                 LogPrintf("DSTX -- Masternode transaction accepted, txid=%s, peer=%d\n",
                         tx.GetHash().ToString(), pfrom->GetId());
                 CPrivateSend::AddDSTX(dstx);
-            } else if (strCommand == NetMsgType::TXLOCKREQUEST || fTryAutoLock) {
+            } else if (strCommand == NetMsgType::TXLOCKREQUEST || (fTryAutoLock && fMasterNode)) {
                 LogPrintf("TXLOCKREQUEST -- Transaction Lock Request accepted, txid=%s, peer=%d\n",
                         tx.GetHash().ToString(), pfrom->GetId());
                 instantsend.AcceptLockRequest(txLockRequest);
