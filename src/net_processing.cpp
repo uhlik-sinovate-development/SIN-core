@@ -2481,10 +2481,13 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         CTxLockRequest txLockRequest;
         CDarksendBroadcastTx dstx;
         int nInvType = MSG_TX;
+        bool fTryAutoLock = false;
 
         // Read data and assign inv type
         if(strCommand == NetMsgType::TX) {
             vRecv >> ptx;
+            txLockRequest = CTxLockRequest(ptx);
+            fTryAutoLock = true;
         } else if(strCommand == NetMsgType::TXLOCKREQUEST) {
             vRecv >> txLockRequest;
             ptx = txLockRequest.tx;
@@ -2508,10 +2511,13 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
 
         // Dash
         // Process custom logic, no matter if tx will be accepted to mempool later or not
-        if (strCommand == NetMsgType::TXLOCKREQUEST) {
+        if (strCommand == NetMsgType::TXLOCKREQUEST || fTryAutoLock) {
             if(!instantsend.ProcessTxLockRequest(txLockRequest, *connman)) {
                 LogPrint(BCLog::INSTANTSEND, "TXLOCKREQUEST -- failed %s\n", txLockRequest.GetHash().ToString());
-                return false;
+                if (!fTryAutoLock) {
+                    return false;
+                }
+                fTryAutoLock = false;
             }
         } else if (strCommand == NetMsgType::DSTX) {
             uint256 hashTx = tx.GetHash();
@@ -2555,7 +2561,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
                 LogPrintf("DSTX -- Masternode transaction accepted, txid=%s, peer=%d\n",
                         tx.GetHash().ToString(), pfrom->GetId());
                 CPrivateSend::AddDSTX(dstx);
-            } else if (strCommand == NetMsgType::TXLOCKREQUEST) {
+            } else if (strCommand == NetMsgType::TXLOCKREQUEST || fTryAutoLock) {
                 LogPrintf("TXLOCKREQUEST -- Transaction Lock Request accepted, txid=%s, peer=%d\n",
                         tx.GetHash().ToString(), pfrom->GetId());
                 instantsend.AcceptLockRequest(txLockRequest);
