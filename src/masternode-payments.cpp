@@ -638,17 +638,21 @@ bool CMasternodeBlockPayees::GetBestPayee(int sintype, CScript& payeeRet)
     }
 
     int nVotes = -1;
-    int count = 0;
     CMasternodePayee payeetmp;
     for (auto& payee : vecPayees) {
-        if (payee.GetVoteCount() >= nVotes && payee.GetSinType() == sintype) {
+        //first candidate OR not the same vote
+        if (payee.GetVoteCount() > nVotes && payee.GetSinType() == sintype) {
             nVotes = payee.GetVoteCount();
-            //if many payees has the same vote
-            if (count == 0 || (count > 1 && UintToArith256(payee.GetHash()) > UintToArith256(payeetmp.GetHash()))){
-                payeeRet = payee.GetPayee();
-                payeetmp = payee;
+
+            payeeRet = payee.GetPayee();
+            payeetmp = payee;
+        }
+        //found someone with the same vote
+        if (payee.GetVoteCount() == nVotes && payee.GetSinType() == sintype) {
+            if (UintToArith256(payee.GetHash()) > UintToArith256(payeetmp.GetHash())){
+                 payeeRet = payee.GetPayee();
+                 payeetmp = payee;
             }
-            count++;
         }
     }
 
