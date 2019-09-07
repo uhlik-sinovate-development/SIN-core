@@ -201,7 +201,7 @@ void CMasternodeMan::CheckAndRemoveBurnFundNotUniqueNode(CConnman& connman)
                     CMasternode mnb = mnpair.second;
                     LogPrint(BCLog::MASTERNODE, "CMasternodeMan::CheckAndRemoveBurnFundNotUniqueNode -- burntx %s size %d find %d\n", 
                                 mnb.vinBurnFund.prevout.ToString(), nBurnFundMap.size(), nBurnFundMap.count(mnb.vinBurnFund.prevout));
-                    if (nBurnFundMap.count(mnb.vinBurnFund.prevout) > 1) {
+                    if (nBurnFundMap.count(mnb.vinBurnFund.prevout) > 0) {
                         // conflict situation with someone else, choose older sigtime
                             LogPrint(BCLog::MASTERNODE, "CMasternodeMan::CheckAndRemoveBurnFundNotUniqueNode -- burntx detected %s\n", mnb.vinBurnFund.prevout.ToStringShort());
                             CMasternode candidate = nBurnFundMap.find(mnb.vinBurnFund.prevout)->second;
