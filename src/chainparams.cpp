@@ -194,6 +194,8 @@ public:
 
         /* disable fallback fee on mainnet */
         m_fallback_fee_enabled = true;
+        nMaxReorganizationDepth = 55; // 55 at 2 minute block timespan is +/- 120 minutes/2h.
+        nMinReorganizationPeers = 3;
     }
 };
 
@@ -304,6 +306,8 @@ public:
 
         /* enable fallback fee on testnet */
         m_fallback_fee_enabled = true;
+        nMaxReorganizationDepth = 5; // 5 at 2 minute block timespan is +/- 10 minutes.
+        nMinReorganizationPeers = 3;
     }
 };
 
@@ -414,6 +418,8 @@ public:
 
         /* enable fallback fee on FinalNet */
         m_fallback_fee_enabled = true;
+        nMaxReorganizationDepth = 5; // 5 at 2 minute block timespan is +/- 10 minutes.
+        nMinReorganizationPeers = 3;
     }
 };
 
@@ -491,6 +497,8 @@ public:
 
         /* enable fallback fee on regtest */
         m_fallback_fee_enabled = true;
+        nMaxReorganizationDepth = 5; // 5 at 2 minute block timespan is +/- 10 minutes.
+        nMinReorganizationPeers = 3;
     }
 };
 
