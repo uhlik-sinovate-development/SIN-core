@@ -9,6 +9,7 @@
 #include <instantx.h>
 #include <governance.h>
 #include <masternodeman.h>
+#include <infinitynodeman.h>
 #include <masternode-payments.h>
 #include <masternode-sync.h>
 #include <privatesend.h>
@@ -47,6 +48,7 @@ void CDSNotificationInterface::UpdatedBlockTip(const CBlockIndex *pindexNew, con
         return;
 
     mnodeman.UpdatedBlockTip(pindexNew);
+    infnodeman.UpdatedBlockTip(pindexNew);
     CPrivateSend::UpdatedBlockTip(pindexNew);
 #ifdef ENABLE_WALLET
     privateSendClient.UpdatedBlockTip(pindexNew);

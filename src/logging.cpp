@@ -135,6 +135,10 @@ const CLogCategoryDesc LogCategories[] =
     {BCLog::MNPAYMENTS, "mnpayments"},
     {BCLog::GOBJECT, "gobject"},
     //
+    // SIN
+    {BCLog::INFINITYNODE, "infinitynode"},
+    {BCLog::INFINITYMAN, "infinityman"},
+    //
 };
 
 bool GetLogCategory(BCLog::LogFlags& flag, const std::string& str)
