@@ -46,4 +46,6 @@ X25X is CPU as well as GPU mineable and ensures **ASIC, FPGA and QUANTUM resista
 
 # Roadmap
 
+# Contributing
+
 # Project status
