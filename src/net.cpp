@@ -2704,19 +2704,6 @@ bool CConnman::RemoveAddedNode(const std::string& strNode)
     return false;
 }
 
-bool CConnman::AddDirectInfinitynode(CNode* pnode)
-{
-    LogPrintf("NET:: number infinity node connections: %d\n",vDirectInfinityNodes.size());
-    LOCK(cs_vDirectInfinityNodes);
-    for(std::vector<CNode*>::const_iterator it = vDirectInfinityNodes.begin(); it != vDirectInfinityNodes.end(); ++it) {
-        if (pnode == *it)
-            return false;
-    }
-
-    LogPrintf("NET:: number infinity node connections: %d\n",vDirectInfinityNodes.size());
-    vDirectInfinityNodes.push_back(pnode);
-    return true;
-}
 
 size_t CConnman::GetNodeCount(NumConnections flags)
 {

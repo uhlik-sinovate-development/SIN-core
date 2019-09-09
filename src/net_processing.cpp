@@ -1380,10 +1380,6 @@ void static ProcessGetData(CNode* pfrom, const CChainParams& chainparams, CConnm
           // Dash
              {
                 LogPrint(BCLog::NET, "ProcessGetData -- message from infinity node protocol: %d like InstantSend PrivateSend\n", inv.type);
-                {
-                    connman->AddDirectInfinitynode(pfrom);
-                }
-                // Send stream from relay memory
                 bool pushed = false;
                 {
                     CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
@@ -1403,19 +1399,6 @@ void static ProcessGetData(CNode* pfrom, const CChainParams& chainparams, CConnm
                     if(pushed)
                         connman->PushMessage(pfrom, msgMaker.Make(inv.GetCommand(), ss));
                 }
-                // SIN TODO: check if there are MSG_TX messages in Dash processing before removing this code
-                /*
-                if (!pushed && inv.type == MSG_TX) {
-                    CTransaction tx;
-                    if (mempool.lookup(inv.hash, tx)) {
-                        CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
-                        ss.reserve(1000);
-                        ss << tx;
-                        connman->PushMessage(pfrom, msgMaker.Make(NetMsgType::TX, ss));
-                        pushed = true;
-                    }
-                }
-                */
                 if (!pushed && inv.type == MSG_TXLOCK_REQUEST) {
                     CTxLockRequest txLockRequest;
                     if(instantsend.GetTxLockRequest(inv.hash, txLockRequest)) {
@@ -2486,8 +2469,10 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
         // Read data and assign inv type
         if(strCommand == NetMsgType::TX) {
             vRecv >> ptx;
-            txLockRequest = CTxLockRequest(ptx);
-            fTryAutoLock = true;
+            if(fMasterNode) {
+                txLockRequest = CTxLockRequest(ptx);
+                fTryAutoLock = true;
+            }
         } else if(strCommand == NetMsgType::TXLOCKREQUEST) {
             vRecv >> txLockRequest;
             ptx = txLockRequest.tx;
@@ -2511,7 +2496,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
 
         // Dash
         // Process custom logic, no matter if tx will be accepted to mempool later or not
-        if (strCommand == NetMsgType::TXLOCKREQUEST || (fTryAutoLock && fMasterNode)) {
+        if (strCommand == NetMsgType::TXLOCKREQUEST || (fTryAutoLock)) {
             if(!instantsend.ProcessTxLockRequest(txLockRequest, *connman)) {
                 LogPrint(BCLog::INSTANTSEND, "TXLOCKREQUEST -- failed %s\n", txLockRequest.GetHash().ToString());
                 if (!fTryAutoLock) {

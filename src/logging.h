@@ -69,6 +69,10 @@ namespace BCLog {
         KEEPASS     = (1 << 29),
         GOBJECT     = (1 << 30),
         //
+        //SIN
+        INFINITYNODE    = (1 << 21),
+        INFINITYMAN     = (1 << 22),
+        //
     };
 
     class Logger

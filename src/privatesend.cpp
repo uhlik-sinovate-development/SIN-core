@@ -11,6 +11,7 @@
 #include <masternode-payments.h>
 #include <masternode-sync.h>
 #include <masternodeman.h>
+#include <infinitynodeman.h>
 #include <messagesigner.h>
 #include <netfulfilledman.h>
 #include <netmessagemaker.h>
@@ -507,6 +508,7 @@ void ThreadCheckPrivateSend(CConnman& connman)
                 //mnodeman.WarnMasternodeDaemonUpdates();
                 mnpayments.CheckAndRemove();
                 instantsend.CheckAndRemove();
+                infnodeman.CheckAndRemove(connman);
             }
             if(fMasterNode && (nTick % (60 * 5) == 0)) {
                 mnodeman.DoFullVerificationStep(connman);

@@ -121,6 +121,8 @@ BITCOIN_CORE_H = \
   index/txindex.h \
   indirectmap.h \
   init.h \
+  infinitynode.h \
+  infinitynodeman.h \
   interfaces/handler.h \
   interfaces/node.h \
   interfaces/wallet.h \
@@ -301,6 +303,8 @@ libsin_server_a_SOURCES += \
   governance-vote.cpp \
   governance-votedb.cpp \
   instantx.cpp \
+  infinitynode.cpp \
+  infinitynodeman.cpp \
   leveldbwrapper.cpp \
   masternode.cpp \
   masternodeman.cpp \
