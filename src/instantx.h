@@ -9,6 +9,7 @@
 
 #include <chain.h>
 #include <net.h>
+#include <wallet/wallet.h>
 #include <primitives/transaction.h>
 
 class CTxLockVote;
@@ -70,7 +71,7 @@ private:
     void Vote(CTxLockCandidate& txLockCandidate, CConnman& connman);
 
     //process consensus vote message
-    bool ProcessTxLockVote(CNode* pfrom, CTxLockVote& vote, CConnman& connman);
+    bool ProcessTxLockVote(CNode* pfrom, CTxLockVote& vote, CConnman& connman, CWallet* pwallet);
     void ProcessOrphanTxLockVotes(CConnman& connman);
     bool IsEnoughOrphanVotesForTx(const CTxLockRequest& txLockRequest);
     bool IsEnoughOrphanVotesForTxAndOutPoint(const uint256& txHash, const COutPoint& outpoint);
