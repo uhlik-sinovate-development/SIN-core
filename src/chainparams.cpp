@@ -196,7 +196,9 @@ public:
         m_fallback_fee_enabled = true;
         nMaxReorganizationDepth = 55; // 55 at 2 minute block timespan is +/- 120 minutes/2h.
         nMinReorganizationPeers = 3;
-    }
+
+        consensus.lwmaStartHeight = 260000;
+        consensus.lwmaAveragingWindow = 96;    }
 };
 
 /**
@@ -308,6 +310,8 @@ public:
         m_fallback_fee_enabled = true;
         nMaxReorganizationDepth = 5; // 5 at 2 minute block timespan is +/- 10 minutes.
         nMinReorganizationPeers = 3;
+
+        consensus.lwmaStartHeight = 260000;
     }
 };
 
@@ -420,6 +424,8 @@ public:
         m_fallback_fee_enabled = true;
         nMaxReorganizationDepth = 5; // 5 at 2 minute block timespan is +/- 10 minutes.
         nMinReorganizationPeers = 3;
+
+        consensus.lwmaStartHeight = 260000;
     }
 };
 
@@ -499,6 +505,8 @@ public:
         m_fallback_fee_enabled = true;
         nMaxReorganizationDepth = 5; // 5 at 2 minute block timespan is +/- 10 minutes.
         nMinReorganizationPeers = 3;
+
+        consensus.lwmaStartHeight = 260000;
     }
 };
 
