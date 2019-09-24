@@ -130,12 +130,12 @@ public:
 class CTxLockRequest
 {
 private:
-    static const CAmount MIN_FEE            = 0.001 * COIN;
+    static const CAmount MIN_FEE            = 0.1 * COIN;
 
 public:
     /// Warn for a large number of inputs to an IS tx - fees could be substantial
     /// and the number txlvote responses requested large (10 * # of inputs)
-    static const int WARN_MANY_INPUTS       = 100;
+    static const int WARN_MANY_INPUTS       = 10;
 
     CTransactionRef tx;
 

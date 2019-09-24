@@ -1242,22 +1242,6 @@ Note:  Since the fee is calculated on a per-byte basis, a fee of &quot;100 satos
         <number>3</number>
        </property>
        <item>
-        <widget class="QCheckBox" name="checkUsePrivateSend">
-         <property name="minimumSize">
-          <size>
-           <width>95</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>ShadowSend</string>
-         </property>
-         <property name="checked">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
         <widget class="QCheckBox" name="checkUseInstantSend">
          <property name="enabled">
           <bool>true</bool>

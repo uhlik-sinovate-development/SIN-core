@@ -68,13 +68,12 @@
 #include <masternodeconfig.h>
 #include <messagesigner.h>
 #include <netfulfilledman.h>
-#ifdef ENABLE_WALLET
-#include <privatesend-client.h>
-#endif // ENABLE_WALLET
-#include <privatesend-server.h>
+
 #include <spork.h>
 #include <sporkdb.h>
-
+//sinovate
+#include <infinitynodeman.h>
+//
 
 #ifndef WIN32
 #include <signal.h>
@@ -1281,6 +1280,64 @@ bool AppInitLockDataDirectory()
     return true;
 }
 
+//TODO: Rename/move to core
+void ThreadCheckInfinityNode(CConnman& connman)
+{
+    if(fLiteMode) return; // disable all Dash specific functionality
+
+    static bool fOneThread;
+    if(fOneThread) return;
+    fOneThread = true;
+
+    RenameThread("sinovate-ps");
+
+    unsigned int nTick = 0;
+
+    while (true)
+    {
+        MilliSleep(1000);
+
+        // try to sync from all available nodes, one step at a time
+        masternodeSync.ProcessTick(connman);
+        if(masternodeSync.IsBlockchainSynced() && !ShutdownRequested() && masternodeSync.IsSynced()) {
+
+            nTick++;
+
+            // make sure to check all masternodes first
+            mnodeman.Check();
+
+            /*SIN TODO*/
+            //mnodeman.ProcessPendingMnbRequests(connman);
+            //mnodeman.ProcessPendingMnvRequests(connman);
+
+            // check if we should activate or ping every few minutes,
+            // slightly postpone first run to give net thread a chance to connect to some peers
+            if(nTick % MASTERNODE_MIN_MNP_SECONDS == 15)
+                activeMasternode.ManageState(connman);
+            if(nTick % 60 == 0) {
+                netfulfilledman.CheckAndRemove();
+                mnodeman.ProcessMasternodeConnections(connman);
+                mnodeman.CheckAndRemove(connman);
+                mnodeman.CheckAndRemoveBurnFundNotUniqueNode(connman);
+                mnodeman.CheckAndRemoveLimitNumberNode(connman, 1, Params().GetConsensus().nLimitSINNODE_1);
+                mnodeman.CheckAndRemoveLimitNumberNode(connman, 5, Params().GetConsensus().nLimitSINNODE_5);
+                mnodeman.CheckAndRemoveLimitNumberNode(connman, 10, Params().GetConsensus().nLimitSINNODE_10);
+                //mnodeman.WarnMasternodeDaemonUpdates();
+                mnpayments.CheckAndRemove();
+                instantsend.CheckAndRemove();
+                infnodeman.CheckAndRemove(connman);
+            }
+            if(fMasterNode && (nTick % (60 * 5) == 0)) {
+                mnodeman.DoFullVerificationStep(connman);
+            }
+            if(nTick % (60 * 5) == 0) {
+                governance.DoMaintenance(connman);
+            }
+        }
+    }
+}
+
+
 bool AppInitMain()
 {
     const CChainParams& chainparams = Params();
@@ -1788,7 +1845,7 @@ bool AppInitMain()
     }
 
     // Dash
-    // ********************************************************* Step 11a: setup PrivateSend
+    // ********************************************************* Step 11a: setup InfinityNode
     fMasterNode = gArgs.GetBoolArg("-masternode", false);
     // TODO: masternode should have no wallet
 
@@ -1839,17 +1896,6 @@ bool AppInitMain()
             }
         }
     }
-
-    privateSendClient.nLiquidityProvider = std::min(std::max((int)gArgs.GetArg("-liquidityprovider", DEFAULT_PRIVATESEND_LIQUIDITY), 0), 100);
-    if(privateSendClient.nLiquidityProvider) {
-        // special case for liquidity providers only, normal clients should use default value
-        privateSendClient.SetMinBlocksToWait(privateSendClient.nLiquidityProvider * 15);
-    }
-
-    privateSendClient.fEnablePrivateSend = gArgs.GetBoolArg("-enableprivatesend", false);
-    privateSendClient.fPrivateSendMultiSession = gArgs.GetBoolArg("-privatesendmultisession", DEFAULT_PRIVATESEND_MULTISESSION);
-    privateSendClient.nPrivateSendRounds = std::min(std::max((int)gArgs.GetArg("-privatesendrounds", DEFAULT_PRIVATESEND_ROUNDS), 2), privateSendClient.nLiquidityProvider ? 99999 : 16);
-    privateSendClient.nPrivateSendAmount = std::min(std::max((int)gArgs.GetArg("-privatesendamount", DEFAULT_PRIVATESEND_AMOUNT), 2), 999999);
 #endif // ENABLE_WALLET
 
     fEnableInstantSend = gArgs.GetBoolArg("-enableinstantsend", 1);
@@ -1864,13 +1910,6 @@ bool AppInitMain()
 
     LogPrintf("fLiteMode %d\n", fLiteMode);
     LogPrintf("nInstantSendDepth %d\n", nInstantSendDepth);
-#ifdef ENABLE_WALLET
-    LogPrintf("PrivateSend rounds %d\n", privateSendClient.nPrivateSendRounds);
-    LogPrintf("PrivateSend amount %d\n", privateSendClient.nPrivateSendAmount);
-#endif // ENABLE_WALLET
-
-    CPrivateSend::InitStandardDenominations();
-
     // ********************************************************* Step 11b: Load cache data
 
     // LOAD SERIALIZED DAT FILES INTO DATA CACHES FOR INTERNAL USE
@@ -1920,16 +1959,9 @@ bool AppInitMain()
 
     // ********************************************************* Step 11d: start dash-ps-<smth> threads
 
-    threadGroup.create_thread(boost::bind(&ThreadCheckPrivateSend, boost::ref(*g_connman)));
-    if (fMasterNode)
-        threadGroup.create_thread(boost::bind(&ThreadCheckPrivateSendServer, boost::ref(*g_connman)));
-#ifdef ENABLE_WALLET
-    else
-        threadGroup.create_thread(boost::bind(&ThreadCheckPrivateSendClient, boost::ref(*g_connman)));
-#endif // ENABLE_WALLET
-    //
+    threadGroup.create_thread(boost::bind(&ThreadCheckInfinityNode, boost::ref(*g_connman)));
 
-    // ********************************************************* Step 12: start node
+	// ********************************************************* Step 12: start node
 
     int chain_active_height;
 

@@ -83,28 +83,19 @@ SendCoinsDialog::SendCoinsDialog(const PlatformStyle *_platformStyle, QWidget *p
     /*SIN*/
     // Dash specific
     QSettings settings;
-    if (!settings.contains("bUseDarkSend"))
-        settings.setValue("bUseDarkSend", false);
     if (!settings.contains("bUseInstantX"))
         settings.setValue("bUseInstantX", false);
 
-    bool fUsePrivateSend = settings.value("bUseDarkSend").toBool();
     bool fUseInstantSend = settings.value("bUseInstantX").toBool();
     if(fLiteMode) {
-        ui->checkUsePrivateSend->setChecked(false);
-        ui->checkUsePrivateSend->setVisible(false);
         ui->checkUseInstantSend->setVisible(false);
-        CoinControlDialog::coinControl()->fUsePrivateSend = false;
         CoinControlDialog::coinControl()->fUseInstantSend = false;
     }
     else{
-        ui->checkUsePrivateSend->setChecked(fUsePrivateSend);
         ui->checkUseInstantSend->setChecked(fUseInstantSend);
-        CoinControlDialog::coinControl()->fUsePrivateSend = fUsePrivateSend;
         CoinControlDialog::coinControl()->fUseInstantSend = fUseInstantSend;
     }
 
-    connect(ui->checkUsePrivateSend, SIGNAL(stateChanged ( int )), this, SLOT(updateDisplayUnit()));
     connect(ui->checkUseInstantSend, SIGNAL(stateChanged ( int )), this, SLOT(updateInstantSend()));
 
     // Coin Control: clipboard actions
@@ -271,24 +262,9 @@ void SendCoinsDialog::on_sendButton_clicked()
     recipients[0].inputType = ALL_COINS;
     recipients[0].fUseInstantSend = false;
 
-    QString strFunds = tr(": using") + " <b>" + tr("anonymous funds") + "</b>";
-
     QString strFee = "";
-    recipients[0].inputType = ONLY_DENOMINATED;
+    QString strFunds = tr(": using") + " <b>" + tr("any available funds") + "</b>";
 
-    if(ui->checkUsePrivateSend->isChecked()) {
-        recipients[0].inputType = ONLY_DENOMINATED;
-        strFunds = tr(": using") + " <b>" + tr("Anonymous funds - ShadowSend") + "</b>";
-        QString strNearestAmount(
-            BitcoinUnits::formatWithUnit(
-                model->getOptionsModel()->getDisplayUnit(), CPrivateSend::GetSmallestDenomination()));
-        strFee = QString(tr(
-            "(privatesend requires this amount to be rounded up to the nearest %1)."
-        ).arg(strNearestAmount));
-    } else {
-        recipients[0].inputType = ALL_COINS;
-        strFunds = tr(": using") + " <b>" + tr("any available funds (NOT ShadowSend)") + "</b>";
-    }
 
     if(ui->checkUseInstantSend->isChecked()) {
         recipients[0].fUseInstantSend = true;
@@ -300,16 +276,13 @@ void SendCoinsDialog::on_sendButton_clicked()
     //
 
     fNewRecipientAllowed = false;
-    // Dash
-    // request unlock only if was locked or unlocked for mixing:
+
     // this way we let users unlock by walletpassphrase or by menu
     // and make many transactions while unlocking through this dialog
     // will call relock
 
     //WalletModel::UnlockContext ctx(model->requestUnlock());
     //WalletModel::EncryptionStatus encStatus = model->getEncryptionStatus();
-    //if(encStatus == model->Locked || encStatus == model->UnlockedForMixingOnly)
-    //{
         WalletModel::UnlockContext ctx(model->requestUnlock());
         // next code is unmodified only justified right
 

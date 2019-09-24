@@ -231,10 +231,6 @@ BITCOIN_CORE_H += \
   masternodeconfig.h \
   messagesigner.h \
   netfulfilledman.h \
-  privatesend.h \
-  privatesend-client.h \
-  privatesend-server.h \
-  privatesend-util.h \
   spork.h \
   sporkdb.h
 
@@ -313,8 +309,6 @@ libsin_server_a_SOURCES += \
   masternodeconfig.cpp \
   messagesigner.cpp \
   netfulfilledman.cpp \
-  privatesend.cpp \
-  privatesend-server.cpp \
   rpc/governance.cpp \
   rpc/masternode.cpp \
   spork.cpp \
@@ -354,9 +348,7 @@ libsin_wallet_a_SOURCES = \
 
 # dash wallet
 libsin_wallet_a_SOURCES += \
-  keepass.cpp \
-  privatesend-client.cpp \
-  privatesend-util.cpp
+  keepass.cpp
 
 # crypto primitives library
 crypto_libsin_crypto_base_a_CPPFLAGS = $(AM_CPPFLAGS)

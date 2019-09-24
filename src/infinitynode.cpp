@@ -9,6 +9,7 @@
 #include <script/standard.h>
 
 #include <shutdown.h>
+#include <timedata.h>
 
 #include <util.h>
 #ifdef ENABLE_WALLET

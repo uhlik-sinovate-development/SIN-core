@@ -410,9 +410,6 @@ void BitcoinGUI::createActions()
     showHelpMessageAction->setStatusTip(tr("Show the %1 help message to get a list with possible SIN command-line options").arg(tr("SINOVATE")));
 
     // Dash
-    //-//showPrivateSendHelpAction = new QAction(QApplication::style()->standardIcon(QStyle::SP_MessageBoxInformation), tr("&PrivateSend information"), this);
-    //-//showPrivateSendHelpAction->setMenuRole(QAction::NoRole);
-    //-//showPrivateSendHelpAction->setStatusTip(tr("Show the PrivateSend basic information"));
 
     //-//connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
     //-//connect(aboutAction, SIGNAL(triggered()), this, SLOT(aboutClicked()));
@@ -420,7 +417,6 @@ void BitcoinGUI::createActions()
     //-//connect(optionsAction, SIGNAL(triggered()), this, SLOT(optionsClicked()));
     //-//connect(toggleHideAction, SIGNAL(triggered()), this, SLOT(toggleHidden()));
     //-//connect(showHelpMessageAction, SIGNAL(triggered()), this, SLOT(showHelpMessageClicked()));
-    //-//connect(showPrivateSendHelpAction, SIGNAL(triggered()), this, SLOT(showPrivateSendHelpClicked()));
 
     // Jump directly to tabs in RPC-console
     //-//connect(openInfoAction, SIGNAL(triggered()), this, SLOT(showInfo()));
@@ -1363,30 +1359,12 @@ void BitcoinGUI::setEncryptionStatus(int status)
         //
         encryptWalletAction->setEnabled(false); // TODO: decrypt currently not supported
         break;
-    // Dash
-    case WalletModel::UnlockedForMixingOnly:
-        labelWalletEncryptionIcon->show();
-        labelWalletEncryptionIcon->setPixmap(platformStyle->SingleColorIcon(":/icons/lock_open").pixmap(STATUSBAR_ICONSIZE,STATUSBAR_ICONSIZE));
-        labelWalletEncryptionIcon->setToolTip(tr("Wallet is <b>encrypted</b> and currently <b>unlocked</b> for mixing only"));
-        encryptWalletAction->setChecked(true);
-        changePassphraseAction->setEnabled(true);
-        // Dash
-        //-//unlockWalletAction->setVisible(true);
-        //-//lockWalletAction->setVisible(true);
-        //
-        encryptWalletAction->setEnabled(false); // TODO: decrypt currently not supported
-        break;
-    //
     case WalletModel::Locked:
         labelWalletEncryptionIcon->show();
         labelWalletEncryptionIcon->setPixmap(platformStyle->SingleColorIcon(":/icons/lock_closed").pixmap(STATUSBAR_ICONSIZE,STATUSBAR_ICONSIZE));
         labelWalletEncryptionIcon->setToolTip(tr("Wallet is <b>encrypted</b> and currently <b>locked</b>"));
         encryptWalletAction->setChecked(true);
         changePassphraseAction->setEnabled(true);
-        // Dash
-        //-//unlockWalletAction->setVisible(true);
-        //-//lockWalletAction->setVisible(false);
-        //
         encryptWalletAction->setEnabled(false); // TODO: decrypt currently not supported
         break;
     }
