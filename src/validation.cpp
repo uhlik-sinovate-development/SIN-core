@@ -3519,7 +3519,8 @@ static bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationSta
     // LogPrintf("nHeight %d nBitsConsensus %08x nBitsActual %08x nBitsPass %s\n", nHeight, nBitsExpected, block.nBits, (nBitsExpected == block.nBits) ? "Y" : "N");
 
     if (block.nBits != nBitsExpected)
-        return state.DoS(100, false, REJECT_INVALID, "bad-diffbits", false, "incorrect proof of work");
+        //return state.DoS(100, false, REJECT_INVALID, "bad-diffbits", false, "incorrect proof of work");
+        return state.DoS(100, error("incorrect proof of work; received: %u, expected: %u", block.nBits, nBitsExpected), REJECT_INVALID, "bad-diffbits");
 
     // Check against checkpoints
     if (fCheckpointsEnabled) {
