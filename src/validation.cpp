@@ -3516,7 +3516,7 @@ static bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationSta
     const Consensus::Params& consensusParams = params.GetConsensus();
     uint32_t nBitsExpected = GetNextWorkRequired(pindexPrev, &block, consensusParams);
 
-    // LogPrintf("nHeight %d nBitsConsensus %08x nBitsActual %08x nBitsPass %s\n", nHeight, nBitsExpected, block.nBits, (nBitsExpected == block.nBits) ? "Y" : "N");
+    LogPrintf("nHeight %d nBitsConsensus %08x nBitsActual %08x nBitsPass %s\n", nHeight, nBitsExpected, block.nBits, (nBitsExpected == block.nBits) ? "Y" : "N");
 
     if (block.nBits != nBitsExpected)
         return state.DoS(100, false, REJECT_INVALID, "bad-diffbits", false, "incorrect proof of work");

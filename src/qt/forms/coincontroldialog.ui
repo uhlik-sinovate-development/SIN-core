@@ -737,7 +737,7 @@ QScrollBar:right-arrow {
       <bool>false</bool>
      </property>
      <property name="columnCount">
-      <number>11</number>
+      <number>10</number>
      </property>
      <attribute name="headerShowSortIndicator" stdset="0">
       <bool>true</bool>
@@ -757,17 +757,12 @@ QScrollBar:right-arrow {
      </column>
      <column>
       <property name="text">
-       <string>Received with label</string>
+       <string>Label</string>
       </property>
      </column>
      <column>
       <property name="text">
-       <string>Received with address</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Shadow Rounds</string>
+       <string>Address</string>
       </property>
      </column>
      <column>
@@ -777,7 +772,7 @@ QScrollBar:right-arrow {
      </column>
      <column>
       <property name="text">
-       <string>Confirmations</string>
+       <string>Ages</string>
       </property>
       <property name="toolTip">
        <string>Confirmed</string>
@@ -785,12 +780,12 @@ QScrollBar:right-arrow {
      </column>
      <column>
       <property name="text">
-       <string/>
+       <string>TxHash</string>
       </property>
      </column>
      <column>
       <property name="text">
-       <string/>
+       <string>Index</string>
       </property>
      </column>
      <column>
