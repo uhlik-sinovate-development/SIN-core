@@ -311,7 +311,7 @@ public:
         nMaxReorganizationDepth = 5; // 5 at 2 minute block timespan is +/- 10 minutes.
         nMinReorganizationPeers = 3;
 
-        consensus.lwmaStartHeight = 1500;
+        consensus.lwmaStartHeight = 1000;
     }
 };
 
