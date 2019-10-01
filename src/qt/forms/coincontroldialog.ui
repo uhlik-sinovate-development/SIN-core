@@ -131,8 +131,17 @@ QDialog#CoinControlDialog .QLabel#labelLocked { /* Coin Control Change */
   color:#ffffff;
   background-color:transparent;
   }
-  
-  QDialog#CoinControlDialog QHeaderView::section:first { /* Bug Fix: the number &quot;1&quot; displays in this table for some reason... */
+ QDialog#CoinControlDialog .QFrame#frame .QRadioButton::indicator{
+ width: 24px;
+ height: 24px;
+}
+ QDialog#CoinControlDialog .QFrame#frame .QRadioButton::indicator::unchecked{ 
+ image: url(':/images/radio_unchecked');
+}
+ QDialog#CoinControlDialog .QFrame#frame .QRadioButton::indicator::checked{ 
+ image: url(':/images/radio_checked');
+}
+ QDialog#CoinControlDialog QHeaderView::section:first { /* Bug Fix: the number &quot;1&quot; displays in this table for some reason... */
   color:transparent;
   }
   
