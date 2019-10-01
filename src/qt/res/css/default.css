@@ -1756,6 +1756,19 @@ QWidget#tabAllMasternodes {
 .QRadioButton {
 color: #fff;
 }
+QRadioButton::indicator
+{
+    width: 24px;
+    height: 24px;
+}
+QRadioButton::indicator::unchecked
+{
+   image: url(':/images/radio_unchecked');
+}
+QRadioButton::indicator::checked 
+{
+    image: url(':/images/radio_checked');
+}
 QGroupBox {
     background-color: transparent;
     color: #fff;
