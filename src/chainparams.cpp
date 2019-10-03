@@ -312,6 +312,7 @@ public:
         nMinReorganizationPeers = 3;
 
         consensus.lwmaStartHeight = 150;
+        consensus.lwmaAveragingWindow = 96;
     }
 };
 
@@ -426,6 +427,7 @@ public:
         nMinReorganizationPeers = 3;
 
         consensus.lwmaStartHeight = 260000;
+        consensus.lwmaAveragingWindow = 96;
     }
 };
 
@@ -507,6 +509,7 @@ public:
         nMinReorganizationPeers = 3;
 
         consensus.lwmaStartHeight = 260000;
+        consensus.lwmaAveragingWindow = 96;
     }
 };
 
