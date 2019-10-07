@@ -197,6 +197,7 @@ public:
         nMaxReorganizationDepth = 55; // 55 at 2 minute block timespan is +/- 120 minutes/2h.
         nMinReorganizationPeers = 3;
 
+
         consensus.lwmaStartHeight = 262000;
         consensus.lwmaAveragingWindow = 96;    }
 };
