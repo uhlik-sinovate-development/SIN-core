@@ -121,8 +121,10 @@
 	 <file alias="qtreeview_selected">res/images/drkblue_qtreeview_selected.png</file>
 	 <file alias="rightArrow_small">res/images/drkblue_rightArrow_small.png</file>
 	 <file alias="upArrow_small">res/images/drkblue_upArrow_small.png</file>
-   <file alias="about">res/images/about.png</file>
-	 </qresource>
+     <file alias="about">res/images/about.png</file>
+     <file alias="radio_unchecked">res/images/unchecked_radio.png</file>
+     <file alias="radio_checked">res/images/checked_radio.png</file>
+     </qresource>
    <qresource prefix="/fonts">
        <file alias="Hind-Bold">res/fonts/Hind-Bold.ttf</file>
        <file alias="Hind-Light">res/fonts/Hind-Light.ttf</file>

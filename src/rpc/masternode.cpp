@@ -14,10 +14,8 @@
 #include <masternodeconfig.h>
 #include <masternodeman.h>
 #ifdef ENABLE_WALLET
-#include <privatesend-client.h>
 #include <wallet/coincontrol.h>
 #endif // ENABLE_WALLET
-#include <privatesend-server.h>
 #include <rpc/server.h>
 #include <util.h>
 #include <utilmoneystr.h>
@@ -31,94 +29,7 @@ UniValue masternodelist(const JSONRPCRequest& request);
 
 #ifdef ENABLE_WALLET
 void EnsureWalletIsUnlocked();
-
-UniValue privatesend(const JSONRPCRequest& request)
-{
-    std::shared_ptr<CWallet> const wallet = GetWalletForJSONRPCRequest(request);
-    CWallet* const pwallet = wallet.get();
-
-    if (request.fHelp || request.params.size() != 1)
-        throw std::runtime_error(
-            "privatesend \"command\"\n"
-            "\nArguments:\n"
-            "1. \"command\"        (string or set of strings, required) The command to execute\n"
-            "\nAvailable commands:\n"
-            "  start       - Start mixing\n"
-            "  stop        - Stop mixing\n"
-            "  reset       - Reset mixing\n"
-            );
-
-    if(request.params[0].get_str() == "start") {
-        {
-            LOCK(pwallet->cs_wallet);
-            EnsureWalletIsUnlocked(pwallet);
-        }
-
-        if(fMasterNode)
-            return "Mixing is not supported from masternodes";
-
-        privateSendClient.fEnablePrivateSend = true;
-        bool result = privateSendClient.DoAutomaticDenominating(*g_connman);
-        return "Mixing " + (result ? "started successfully" : ("start failed: " + privateSendClient.GetStatus() + ", will retry"));
-    }
-
-    if(request.params[0].get_str() == "stop") {
-        privateSendClient.fEnablePrivateSend = false;
-        return "Mixing was stopped";
-    }
-
-    if(request.params[0].get_str() == "reset") {
-        privateSendClient.ResetPool();
-        return "Mixing was reset";
-    }
-
-    return "Unknown command, please see \"help privatesend\"";
-}
 #endif // ENABLE_WALLET
-
-UniValue getpoolinfo(const JSONRPCRequest& request)
-{
-#ifdef ENABLE_WALLET
-    std::shared_ptr<CWallet> const wallet = GetWalletForJSONRPCRequest(request);
-    CWallet* const pwallet = wallet.get();
-#endif // ENABLE_WALLET
-
-    if (request.fHelp || request.params.size() != 0)
-        throw std::runtime_error(
-            "getpoolinfo\n"
-            "Returns an object containing mixing pool related information.\n");
-
-#ifdef ENABLE_WALLET
-    CPrivateSendBase* pprivateSendBase = fMasterNode ? (CPrivateSendBase*)&privateSendServer : (CPrivateSendBase*)&privateSendClient;
-
-    UniValue obj(UniValue::VOBJ);
-    obj.push_back(Pair("state",             pprivateSendBase->GetStateString()));
-    obj.push_back(Pair("mixing_mode",       (!fMasterNode && privateSendClient.fPrivateSendMultiSession) ? "multi-session" : "normal"));
-    obj.push_back(Pair("queue",             pprivateSendBase->GetQueueSize()));
-    obj.push_back(Pair("entries",           pprivateSendBase->GetEntriesCount()));
-    obj.push_back(Pair("status",            privateSendClient.GetStatus()));
-
-    masternode_info_t mnInfo;
-    if (privateSendClient.GetMixingMasternodeInfo(mnInfo)) {
-        obj.push_back(Pair("outpoint",      mnInfo.vin.prevout.ToStringShort()));
-        obj.push_back(Pair("addr",          mnInfo.addr.ToString()));
-    }
-
-    if (pwallet) {
-        obj.push_back(Pair("keys_left",     pwallet->nKeysLeftSinceAutoBackup));
-        obj.push_back(Pair("warnings",      pwallet->nKeysLeftSinceAutoBackup < PRIVATESEND_KEYS_THRESHOLD_WARNING
-                                                ? "WARNING: keypool is almost depleted!" : ""));
-    }
-#else // ENABLE_WALLET
-    UniValue obj(UniValue::VOBJ);
-    obj.push_back(Pair("state",             privateSendServer.GetStateString()));
-    obj.push_back(Pair("queue",             privateSendServer.GetQueueSize()));
-    obj.push_back(Pair("entries",           privateSendServer.GetEntriesCount()));
-#endif // ENABLE_WALLET
-
-    return obj;
-}
-
 
 UniValue masternode(const JSONRPCRequest& request)
 {
@@ -208,9 +119,6 @@ UniValue masternode(const JSONRPCRequest& request)
 
         std::string strMode = request.params[1].get_str();
 
-        if (strMode == "ps")
-            return mnodeman.CountEnabled(MIN_PRIVATESEND_PEER_PROTO_VERSION);
-
         if (strMode == "enabled")
             return mnodeman.CountEnabled();
 
@@ -222,9 +130,8 @@ UniValue masternode(const JSONRPCRequest& request)
             return nCount;
 
         if (strMode == "all")
-            return strprintf("Total: %d (PS Compatible: %d / Enabled: %d / Qualify: %d)",
-                mnodeman.size(), mnodeman.CountEnabled(MIN_PRIVATESEND_PEER_PROTO_VERSION),
-                mnodeman.CountEnabled(), nCount);
+            return strprintf("Total: %d (Enabled: %d / Qualify: %d)",
+                mnodeman.size(), mnodeman.CountEnabled(), nCount);
     }
 
     if (strCommand == "current" || strCommand == "winner")
@@ -1007,7 +914,6 @@ static UniValue infinitynodeburnfund(const JSONRPCRequest& request)
             mapValue_t mapValue;
             bool fSubtractFeeFromAmount = true;
             bool fUseInstantSend=false;
-            bool fUsePrivateSend=false;
             CCoinControl coin_control;
             coin_control.Select(COutPoint(out.tx->GetHash(), out.i));
 
@@ -1023,7 +929,7 @@ static UniValue infinitynodeburnfund(const JSONRPCRequest& request)
             CRecipient recipient = {script, nAmount, fSubtractFeeFromAmount};
             vecSend.push_back(recipient);
             CTransactionRef tx;
-            if (!pwallet->CreateTransaction(vecSend, tx, reservekey, nFeeRequired, nChangePosRet, strError, coin_control, true, fUsePrivateSend ? ONLY_DENOMINATED : ALL_COINS, fUseInstantSend)) {
+            if (!pwallet->CreateTransaction(vecSend, tx, reservekey, nFeeRequired, nChangePosRet, strError, coin_control, true, ALL_COINS, fUseInstantSend)) {
                 if (!fSubtractFeeFromAmount && nAmount + nFeeRequired > curBalance)
                     strError = strprintf("Error: This transaction requires a transaction fee of at least %s", FormatMoney(nFeeRequired));
                 throw JSONRPCError(RPC_WALLET_ERROR, strError);
@@ -1136,12 +1042,8 @@ static const CRPCCommand commands[] =
     { "SIN",                "masternode",             &masternode,             {"command"}  },
     { "dash",               "masternodelist",         &masternodelist,         {"mode", "filter"}  },
     { "dash",               "masternodebroadcast",    &masternodebroadcast,    {"command"}  },
-    { "dash",               "getpoolinfo",            &getpoolinfo,            {}  },
     { "SIN",                "mnsetup",                &mnsetup,                {}  },
     { "SIN",                "infinitynodeburnfund",   &infinitynodeburnfund,   {"amount"} },
-#ifdef ENABLE_WALLET
-// SIN TODO:    { "dash",               "privatesend",            &privatesend,            {"command"}  },
-#endif
 };
 
 void RegisterDashMasternodeRPCCommands(CRPCTable &t)

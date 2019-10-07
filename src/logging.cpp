@@ -127,7 +127,6 @@ const CLogCategoryDesc LogCategories[] =
 
     // Dash
     // dash log categories //
-    {BCLog::PRIVATESEND, "privatesend"},
     {BCLog::INSTANTSEND, "instantsend"},
     {BCLog::MASTERNODE, "masternode"},
     {BCLog::SPORK, "spork"},

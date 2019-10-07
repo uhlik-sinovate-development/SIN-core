@@ -66,7 +66,6 @@ void CInfinitynodeMan::UpdatedBlockTip(const CBlockIndex *pindex)
 
 void CInfinitynodeMan::CheckAndRemove(CConnman& connman)
 {
-    /*this function is called in PrivateSend thread and after sync of node*/
     LOCK(cs);
     if (nCachedBlockHeight > nLastScanHeight)
     {

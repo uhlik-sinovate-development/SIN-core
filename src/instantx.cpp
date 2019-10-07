@@ -68,19 +68,27 @@ void CInstantSend::ProcessMessage(CNode* pfrom, const std::string& strCommand, C
         // Ignore any InstantSend messages until masternode list is synced
         if(!masternodeSync.IsMasternodeListSynced()) return;
 
-        LOCK(cs_main);
+        TRY_LOCK(cs_main, lockMain);
+        if(!lockMain) return;
 #ifdef ENABLE_WALLET
         std::vector<std::shared_ptr<CWallet>> wallets = GetWallets();
         CWallet * const pwallet = (wallets.size() > 0) ? wallets[0].get() : nullptr;
-        if (pwallet)
-            LOCK(pwallet->cs_wallet);
+        if (pwallet) {
+            TRY_LOCK(pwallet->cs_wallet, lockWallet);
+            if(!lockWallet) {
+                return;
+            }
+        } else {
+            return;
+        }
 #endif
-        LOCK(cs_instantsend);
+        TRY_LOCK(cs_instantsend, lockInstantsend);
+        if(!lockInstantsend) return;
 
         if(mapTxLockVotes.count(nVoteHash)) return;
         mapTxLockVotes.insert(std::make_pair(nVoteHash, vote));
 
-        ProcessTxLockVote(pfrom, vote, connman);
+        ProcessTxLockVote(pfrom, vote, connman, pwallet);
 
         return;
     }
@@ -300,15 +308,19 @@ void CInstantSend::Vote(CTxLockCandidate& txLockCandidate, CConnman& connman)
 }
 
 //received a consensus vote
-bool CInstantSend::ProcessTxLockVote(CNode* pfrom, CTxLockVote& vote, CConnman& connman)
+bool CInstantSend::ProcessTxLockVote(CNode* pfrom, CTxLockVote& vote, CConnman& connman, CWallet* pwallet)
 {
-    // cs_main, cs_wallet and cs_instantsend should be already locked
+    // cs_main, cs_wallet and cs_instantsend should be already locked, but cs_wallet will only be locked if pwallet != nullptr
     AssertLockHeld(cs_main);
 #ifdef ENABLE_WALLET
-    std::vector<std::shared_ptr<CWallet>> wallets = GetWallets();
-    CWallet * const pwallet = (wallets.size() > 0) ? wallets[0].get() : nullptr;
-    if (pwallet)
+    // Make sure we let locks fail and only check for them if they're actually held
+    TRY_LOCK(pwallet->cs_wallet, lockWallet);
+    if(!lockWallet) {
+        return false;
+    }
+    if (pwallet) {
         AssertLockHeld(pwallet->cs_wallet);
+    }
 #endif
     AssertLockHeld(cs_instantsend);
 
@@ -445,7 +457,7 @@ void CInstantSend::ProcessOrphanTxLockVotes(CConnman& connman)
 
     std::map<uint256, CTxLockVote>::iterator it = mapTxLockVotesOrphan.begin();
     while(it != mapTxLockVotesOrphan.end()) {
-        if(ProcessTxLockVote(NULL, it->second, connman)) {
+        if(ProcessTxLockVote(NULL, it->second, connman, pwallet)) {
             mapTxLockVotesOrphan.erase(it++);
         } else {
             ++it;

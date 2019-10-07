@@ -492,7 +492,7 @@ static UniValue getaddressesbyaccount(const JSONRPCRequest& request)
     return ret;
 }
 
-static CTransactionRef SendMoney(CWallet * const pwallet, const CTxDestination &address, CAmount nValue, bool fSubtractFeeFromAmount, const CCoinControl& coin_control, mapValue_t mapValue, std::string fromAccount, int termDepositLength, bool fUseInstantSend=false, bool fUsePrivateSend=false)
+static CTransactionRef SendMoney(CWallet * const pwallet, const CTxDestination &address, CAmount nValue, bool fSubtractFeeFromAmount, const CCoinControl& coin_control, mapValue_t mapValue, std::string fromAccount, int termDepositLength, bool fUseInstantSend=false)
 {
     CAmount curBalance = pwallet->GetBalance();
 
@@ -527,7 +527,7 @@ static CTransactionRef SendMoney(CWallet * const pwallet, const CTxDestination &
     CRecipient recipient = {scriptPubKey, nValue, fSubtractFeeFromAmount};
     vecSend.push_back(recipient);
     CTransactionRef tx;
-    if (!pwallet->CreateTransaction(vecSend, tx, reservekey, nFeeRequired, nChangePosRet, strError, coin_control, true, fUsePrivateSend ? ONLY_DENOMINATED : ALL_COINS, fUseInstantSend)) {
+    if (!pwallet->CreateTransaction(vecSend, tx, reservekey, nFeeRequired, nChangePosRet, strError, coin_control, true, ALL_COINS, fUseInstantSend)) {
         if (!fSubtractFeeFromAmount && nValue + nFeeRequired > curBalance)
             strError = strprintf("Error: This transaction requires a transaction fee of at least %s", FormatMoney(nFeeRequired));
         throw JSONRPCError(RPC_WALLET_ERROR, strError);
@@ -598,7 +598,6 @@ static UniValue infinitynodenotifydata(const JSONRPCRequest& request)
     mapValue_t mapValue;
     bool fSubtractFeeFromAmount = true;
     bool fUseInstantSend=false;
-    bool fUsePrivateSend=false;
     CCoinControl coin_control;
     //coin_control.Select(COutPoint(out.tx->GetHash(), out.i));
     //CTransactionRef tx = SendMoney(pwallet, dest, nAmount, fSubtractFeeFromAmount, coin_control, std::move(mapValue), {} /* fromAccount */, 0);
@@ -614,7 +613,7 @@ static UniValue infinitynodenotifydata(const JSONRPCRequest& request)
     CRecipient recipient = {script, nAmount, fSubtractFeeFromAmount};
     vecSend.push_back(recipient);
     CTransactionRef tx;
-    if (!pwallet->CreateTransaction(vecSend, tx, reservekey, nFeeRequired, nChangePosRet, strError, coin_control, true, fUsePrivateSend ? ONLY_DENOMINATED : ALL_COINS, fUseInstantSend)) {
+    if (!pwallet->CreateTransaction(vecSend, tx, reservekey, nFeeRequired, nChangePosRet, strError, coin_control, true, ALL_COINS, fUseInstantSend)) {
         if (!fSubtractFeeFromAmount && nAmount + nFeeRequired > curBalance)
             strError = strprintf("Error: This transaction requires a transaction fee of at least %s", FormatMoney(nFeeRequired));
         throw JSONRPCError(RPC_WALLET_ERROR, strError);
@@ -1552,7 +1551,6 @@ static UniValue sendmany(const JSONRPCRequest& request)
             "       \"ECONOMICAL\"\n"
             "       \"CONSERVATIVE\"\n"
             "9. \"use_is\"                (bool, optional) Send this transaction as InstantSend (default: false)\n"
-            "10. \"use_ps\"                (bool, optional) Use anonymized funds only (default: false)\n"
             "\nResult:\n"
             "\"txid\"                   (string) The transaction id for the send. Only 1 transaction is created regardless of \n"
             "                                    the number of addresses.\n"
@@ -1664,15 +1662,12 @@ static UniValue sendmany(const JSONRPCRequest& request)
 
     // Dash
     bool fUseInstantSend = false;
-    bool fUsePrivateSend = false;
     if (!request.params[8].isNull())
         fUseInstantSend = request.params[8].get_bool();
-    if (!request.params[9].isNull())
-        fUsePrivateSend = request.params[9].get_bool();
     //
 
     CTransactionRef tx;
-    bool fCreated = pwallet->CreateTransaction(vecSend, tx, keyChange, nFeeRequired, nChangePosRet, strFailReason, coin_control, true, fUsePrivateSend ? ONLY_DENOMINATED : ALL_COINS, fUseInstantSend);
+    bool fCreated = pwallet->CreateTransaction(vecSend, tx, keyChange, nFeeRequired, nChangePosRet, strFailReason, coin_control, true, ALL_COINS, fUseInstantSend);
     if (!fCreated)
         throw JSONRPCError(RPC_WALLET_INSUFFICIENT_FUNDS, strFailReason);
     CValidationState state;

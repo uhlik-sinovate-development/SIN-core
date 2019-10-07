@@ -28,7 +28,6 @@
 #include <netmessagemaker.h>
 #include <masternode-sync.h>
 #include <masternodeman.h>
-#include <privatesend.h>
 
 #ifdef WIN32
 #include <string.h>
@@ -2762,11 +2761,7 @@ void CConnman::RelayTransaction(const CTransaction& tx)
     
     LogPrintf("Net::RelayTransaction -- tx %s\n", hash.ToString());
     CTxLockRequest txLockRequestRet;
-    CDarksendBroadcastTx dstx = CPrivateSend::GetDSTX(hash);
-    if(dstx) { // MSG_DSTX
-        ss << dstx;
-        LogPrintf("Net::RelayTransaction -- PrivateSend MSG_DSTX %s\n", hash.ToString());
-    } else if(instantsend.GetTxLockRequest(hash, txLockRequestRet)) { // MSG_TXLOCK_REQUEST
+    if(instantsend.GetTxLockRequest(hash, txLockRequestRet)) { // MSG_TXLOCK_REQUEST
         ss << txLockRequestRet;
         LogPrintf("Net::RelayTransaction -- InstantSend MSG_TXLOCK_REQUEST %s\n", hash.ToString());
     } else { // MSG_TX
@@ -2780,8 +2775,7 @@ void CConnman::RelayTransaction(const CTransaction& tx)
 void CConnman::RelayTransaction(const CTransaction& tx, const CDataStream& ss)
 {
     uint256 hash = tx.GetHash();
-    int nInv = static_cast<bool>(CPrivateSend::GetDSTX(hash)) ? MSG_DSTX :
-                (instantsend.HasTxLockRequest(hash) ? MSG_TXLOCK_REQUEST : MSG_TX);
+    int nInv = static_cast<bool>(instantsend.HasTxLockRequest(hash) ? MSG_TXLOCK_REQUEST : MSG_TX);
     LogPrintf("Net::RelayTransaction -- Type in protocol CInv(%d-%s)\n", nInv, hash.ToString());
     CInv inv(nInv, hash);
     {
@@ -2792,7 +2786,7 @@ void CConnman::RelayTransaction(const CTransaction& tx, const CDataStream& ss)
             mapRelayDash.erase(vRelayExpirationDash.front().second);
             vRelayExpirationDash.pop_front();
         }
-        LogPrint(BCLog::NET, "Add relay invenroty for infinity node like InstantSend PrivateSend...\n");
+        LogPrint(BCLog::NET, "Add relay invenroty for infinity node like InstantSend...\n");
         // Save original serialized message so newer versions are preserved
         mapRelayDash.insert(std::make_pair(inv, ss));
         vRelayExpirationDash.push_back(std::make_pair(GetTime() + 15 * 60, inv));

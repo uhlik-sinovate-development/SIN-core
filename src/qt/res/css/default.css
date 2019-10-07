@@ -1004,230 +1004,6 @@ qproperty-alignment: 'AlignVCenter | AlignLeft';
 font-size:12px;
 margin-left:16px;
 }
-
-/* PRIVATESEND WIDGET */
-
-QWidget .QFrame#framePrivateSend { /* PrivateSend Widget */
-background-color: transparent;
-/*border-radius: 10px;*/
-max-width: 451px;
-min-width: 451px;
-max-height: 350px;
-}
-
-QWidget .QFrame#framePrivateSend .QWidget#layoutWidgetPrivateSendHeader { /* PrivateSend Header */
-max-width: 421px;
-min-width: 421px;
-}
-
-QWidget .QFrame#framePrivateSend .QLabel#labelPrivateSendHeader { /* PrivateSend Header */
-qproperty-alignment: 'AlignVCenter | AlignCenter';
-min-width:160px;
-font-size:14px;
-font-weight:bold;
-color:#ffffff;
-border-top-left-radius: 10px;
-border-top-right-radius: 10px;
-background-color:#FF8204;
-margin-right:5px;
-padding-right:5px;
-min-height:35px;
-max-height:35px;
-}
-/******************************************************************/
-QWidget .QFrame#framePrivateSend .QLabel#labelPrivateSendSyncStatus { /* PrivateSend Sync Status */
-qproperty-alignment: 'AlignVCenter | AlignLeft';
-margin-left:2px;
-}
-
-QWidget .QFrame#framePrivateSend #privateSendFormLayoutWidget {
-max-width: 451px;
-max-height: 175px;
-}
-
-QWidget .QFrame#framePrivateSend #privateSendFormLayoutWidget > .QLabel {
-min-width:175px;
-font-weight:normal;
-color:#364860;
-min-height:25px;
-}
-
-QWidget .QFrame#framePrivateSend #privateSendFormLayoutWidget .QLabel#labelPrivateSendEnabledText { /* PrivateSend Status Label */
-qproperty-alignment: 'AlignVCenter | AlignRight';
-min-width:160px;
-background-color:#364860;
-margin-right:5px;
-padding-right:5px;
-}
-
-QWidget .QFrame#framePrivateSend #privateSendFormLayoutWidget .QLabel#labelPrivateSendEnabled { /* PrivateSend Status */
-color:#364860;
-}
-
-QWidget .QFrame#framePrivateSend #privateSendFormLayoutWidget .QLabel#labelCompletitionText { /* PrivateSend Completion Label */
-qproperty-alignment: 'AlignVCenter | AlignRight';
-min-width:160px;
-background-color:#364860;
-margin-right:5px;
-padding-right:5px;
-
-}
-
-QWidget .QFrame#framePrivateSend #privateSendFormLayoutWidget .QProgressBar#privateSendProgress { /* PrivateSend Completion */
-/*border: 1px solid #818181;
-border-radius: 1px;
-margin-right:43px;
-text-align: right;
-color:#818181;
-*/
-border: 1px solid gray;
-border-radius: 3px;
-background: white;
-padding: 1px;
-}
-
-
-QWidget .QFrame#framePrivateSend #privateSendFormLayoutWidget .QProgressBar#privateSendProgress::chunk {
-/*background-color: #3398CC;
-width:1px;
-*/
-background: qlineargradient(x1: 0, y1: 0.5, x2: 1, y2: 0.5, stop: 0 red, stop: 1 white);
-}
-
-QWidget .QFrame#framePrivateSend #privateSendFormLayoutWidget .QLabel#labelAnonymizedText { /* PrivateSend Balance Label */
-qproperty-alignment: 'AlignVCenter | AlignRight';
-min-width:160px;
-background-color:#F8F6F6;
-margin-right:5px;
-padding-right:5px;
-}
-
-QWidget .QFrame#framePrivateSend #privateSendFormLayoutWidget .QLabel#labelAnonymized { /* PrivateSend Balance */
-
-}
-
-QWidget .QFrame#framePrivateSend #privateSendFormLayoutWidget .QLabel#labelAmountAndRoundsText { /* PrivateSend Amount and Rounds Label */
-qproperty-alignment: 'AlignVCenter | AlignRight';
-min-width:160px;
-/*background-color:#F8F6F6;*/
-background-color: #0d1827;
-margin-right:5px;
-padding-right:5px;
-}
-
-QWidget .QFrame#framePrivateSend #privateSendFormLayoutWidget .QLabel#labelAmountRounds { /* PrivateSend Amount and Rounds */
-
-}
-
-QWidget .QFrame#framePrivateSend #privateSendFormLayoutWidget .QLabel#labelSubmittedDenomText { /* PrivateSend Submitted Denom Label */
-qproperty-alignment: 'AlignVCenter | AlignRight';
-min-width:160px;
-/*background-color:#F8F6F6;*/
-background-color: #0d1827;
-margin-right:5px;
-padding-right:5px;
-}
-
-QWidget .QFrame#framePrivateSend #privateSendFormLayoutWidget .QLabel#labelSubmittedDenom { /* PrivateSend Submitted Denom */
-
-}
-
-QWidget .QFrame#framePrivateSend .QWidget#layoutWidgetLastMessageAndButtons {
-max-width: 451px;
-}
-
-QWidget .QFrame#framePrivateSend .QLabel#labelPrivateSendLastMessage { /* PrivateSend Status Notifications */
-qproperty-alignment: 'AlignVCenter | AlignCenter';
-min-width: 288px;
-min-height: 43px;
-font-size:11px;
-color:#818181;
-}
-
-/* PRIVATESEND BUTTONS */
-
-QWidget .QFrame#framePrivateSend .QPushButton { /* PrivateSend Buttons - General Attributes */
-border:0px solid #ffffff;
-}
-
-QWidget .QFrame#framePrivateSend QPushButton:focus {
-border:none;
-outline:none;
-}
-
-QWidget .QFrame#framePrivateSend .QPushButton#togglePrivateSend { /* Start PrivateSend Mixing */
-font-size:15px;
-font-weight:bold;
-background-color:#FF8204;
-border-radius:10px;
-color:#ffffff;
-padding-left:10px;
-padding-right:10px;
-padding-top:5px;
-padding-bottom:6px;
-}
-
-QWidget .QFrame#framePrivateSend .QPushButton#togglePrivateSend:hover {
-
-}
-
-QWidget .QFrame#framePrivateSend .QPushButton#privateSendAuto { /* Try Mix Button */
-background-color:qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: .01 #f6f6f6, stop: .1 rgba(250, 250, 250, 128), stop: .95 rgba(250, 250, 250, 255), stop: 1 #ebebeb);
-border:1px solid #d2d2d2;
-border-radius: 5px;
-color:#616161;
-min-height:25px;
-font-size:9px;
-padding:0px;
-}
-
-QWidget .QFrame#framePrivateSend .QPushButton#privateSendAuto:hover {
-background-color:qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: .01 #f6f6f6, stop: .1 rgba(240, 240, 240, 255), stop: .95 rgba(240, 240, 240, 255), stop: 1 #ebebeb);
-color:#333;
-}
-
-QWidget .QFrame#framePrivateSend .QPushButton#privateSendAuto:pressed {
-border:1px solid #9e9e9e;
-}
-
-QWidget .QFrame#framePrivateSend .QPushButton#privateSendReset { /* Reset Button */
-background-color:qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: .01 #f6f6f6, stop: .1 rgba(250, 250, 250, 128), stop: .95 rgba(250, 250, 250, 255), stop: 1 #ebebeb);
-border:1px solid #d2d2d2;
-border-radius: 5px;
-color:#616161;
-min-height:25px;
-font-size:9px;
-padding:0px;
-}
-
-QWidget .QFrame#framePrivateSend .QPushButton#privateSendReset:hover {
-background-color:qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: .01 #f6f6f6, stop: .1 rgba(240, 240, 240, 255), stop: .95 rgba(240, 240, 240, 255), stop: 1 #ebebeb);
-color:#333;
-}
-
-QWidget .QFrame#framePrivateSend .QPushButton#privateSendReset:pressed {
-border:1px solid #9e9e9e;
-}
-
-QWidget .QFrame#framePrivateSend .QPushButton#privateSendInfo { /* Info Button */
-background-color:qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: .01 #f6f6f6, stop: .1 rgba(250, 250, 250, 128), stop: .95 rgba(250, 250, 250, 255), stop: 1 #ebebeb);
-border:1px solid #d2d2d2;
-border-radius: 5px;
-color:#616161;
-min-height:25px;
-font-size:9px;
-padding:0px;
-}
-
-QWidget .QFrame#framePrivateSend .QPushButton#privateSendInfo:hover {
-background-color:qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: .01 #f6f6f6, stop: .1 rgba(240, 240, 240, 255), stop: .95 rgba(240, 240, 240, 255), stop: 1 #ebebeb);
-color:#333;
-}
-
-QWidget .QFrame#framePrivateSend .QPushButton#privateSendInfo:pressed {
-border:1px solid #9e9e9e;
-}
-
 /* RECENT TRANSACTIONS */
 
 QWidget .QFrame#frame_2 { /* Transactions Widget */
@@ -1381,15 +1157,6 @@ QDialog#SendCoinsDialog .QPushButton#addButton:hover {
 }
 QDialog#SendCoinsDialog .QPushButton#addButton:pressed {
 	border: 1px solid #9e9e9e;
-}
-
-QDialog#SendCoinsDialog .QCheckBox#checkUsePrivateSend { /* PrivateSend Checkbox */
-color:#f2f2f2;
-font-weight:bold;
-/*background: qradialgradient(cx:0.5, cy:0.5, radius: 0.5, fx:0.5, fy:0.5, stop:0 rgba(248, 246, 246, 128), stop: 1 rgba(0, 0, 0, 0));*/
-border-radius:5px;
-padding-top:20px;
-padding-bottom:18px;
 }
 
 QDialog#SendCoinsDialog .QCheckBox#checkUseInstantSend { /* InstantSend Checkbox */
@@ -1861,24 +1628,6 @@ QLabel#labelFeeMinimized {
 color:#f2f2f2;
 }
 
-QLabel#labelPrivateSendEnabledText { /*test*/
-/*color: #f2f2f2;*/
-qproperty-alignment: 'AlignVCenter | AlignCenter';
-min-width:160px;
-font-size:14px;
-font-weight:bold;
-color:#ffffff;
-border-radius: 10px;
-background-color:#364860;
-margin-right:5px;
-padding-right:5px;
-}
-
-QLabel#labelPrivateSendEnabled {
-color: #f2f2f2;
-font-size: 14px;
-}
-
 QLabel#labelCompletitionText {/*test*/
   /*color: #f2f2f2;*/
   qproperty-alignment: 'AlignVCenter | AlignCenter';
@@ -1941,15 +1690,6 @@ padding-right:5px;
 QLabel#labelSubmittedDenom {
   font-size: 14px;
   color: #f2f2f2;
-}
-
-QObject#privateSendProgress {
-  font-size: 14px;
-  color: #f2f2f2;
-}
-
-QLabel#labelPrivateSendLastMessage {
-  font-size: 14px;
 }
 
 QLabel {
@@ -2015,6 +1755,19 @@ QWidget#tabAllMasternodes {
 
 .QRadioButton {
 color: #fff;
+}
+QRadioButton::indicator
+{
+    width: 24px;
+    height: 24px;
+}
+QRadioButton::indicator::unchecked
+{
+   image: url(':/images/radio_unchecked');
+}
+QRadioButton::indicator::checked 
+{
+    image: url(':/images/radio_checked');
 }
 QGroupBox {
     background-color: transparent;

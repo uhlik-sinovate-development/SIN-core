@@ -197,7 +197,8 @@ public:
         nMaxReorganizationDepth = 55; // 55 at 2 minute block timespan is +/- 120 minutes/2h.
         nMinReorganizationPeers = 3;
 
-        consensus.lwmaStartHeight = 260000;
+
+        consensus.lwmaStartHeight = 262000;
         consensus.lwmaAveragingWindow = 96;    }
 };
 
@@ -280,8 +281,8 @@ public:
         vFixedSeeds.clear();
         vSeeds.clear();
 
-        vSeeds.emplace_back("206.189.57.75");
-        vSeeds.emplace_back("165.22.81.15");
+        //vSeeds.emplace_back("206.189.57.75");
+        //vSeeds.emplace_back("165.22.81.15");
 		nDefaultPort = 20980;
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,63);
@@ -311,7 +312,8 @@ public:
         nMaxReorganizationDepth = 5; // 5 at 2 minute block timespan is +/- 10 minutes.
         nMinReorganizationPeers = 3;
 
-        consensus.lwmaStartHeight = 260000;
+        consensus.lwmaStartHeight = 150;
+        consensus.lwmaAveragingWindow = 96;
     }
 };
 
@@ -426,6 +428,7 @@ public:
         nMinReorganizationPeers = 3;
 
         consensus.lwmaStartHeight = 260000;
+        consensus.lwmaAveragingWindow = 96;
     }
 };
 
@@ -507,6 +510,7 @@ public:
         nMinReorganizationPeers = 3;
 
         consensus.lwmaStartHeight = 260000;
+        consensus.lwmaAveragingWindow = 96;
     }
 };
 

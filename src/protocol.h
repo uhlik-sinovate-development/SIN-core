@@ -253,14 +253,6 @@ extern const char *MASTERNODEPAYMENTVOTE;
 extern const char *MASTERNODEPAYMENTSYNC;
 extern const char *MNANNOUNCE;
 extern const char *MNPING;
-extern const char *DSACCEPT;
-extern const char *DSVIN;
-extern const char *DSFINALTX;
-extern const char *DSSIGNFINALTX;
-extern const char *DSCOMPLETE;
-extern const char *DSSTATUSUPDATE;
-extern const char *DSTX;
-extern const char *DSQUEUE;
 extern const char *DSEG;
 extern const char *SYNCSTATUSCOUNT;
 extern const char *MNGOVERNANCESYNC;
@@ -415,7 +407,7 @@ enum GetDataMsg
     MSG_MASTERNODE_QUORUM = 10, // not implemented
     MSG_MASTERNODE_ANNOUNCE = 11,
     MSG_MASTERNODE_PING = 12,
-    MSG_DSTX = 13,
+    //MSG_DSTX = 13,
     MSG_GOVERNANCE_OBJECT = 14,
     MSG_GOVERNANCE_OBJECT_VOTE = 15,
     MSG_MASTERNODE_VERIFY = 16,
