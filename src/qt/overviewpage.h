@@ -41,6 +41,7 @@ public:
     std::vector<COutput> termDepositInfo;
 
 public Q_SLOTS:
+    void infinityNodeStat();
     void setBalance(const interfaces::WalletBalances& balances);
 
 Q_SIGNALS:

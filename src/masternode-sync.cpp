@@ -13,6 +13,7 @@
 #include <masternode-sync.h>
 #include <masternodeman.h>
 #include <netfulfilledman.h>
+#include <infinitynodeman.h>
 #include <netmessagemaker.h>
 #include <spork.h>
 #include <ui_interface.h>
@@ -476,7 +477,9 @@ void CMasternodeSync::UpdatedBlockTip(const CBlockIndex *pindexNew, bool fInitia
 
     if (!IsBlockchainSynced() && fReachedBestHeader) {
         // Reached best header while being in initial mode.
+        infnodeman.updateInfinitynodeList(pindexBestHeader->nHeight);
         // We must be at the tip already, let's move to the next asset.
+        LogPrintf("CMasternodeSync::UpdatedBlockTip -- SwitchToNextAsset at height %d\n", pindexNew->nHeight);
         SwitchToNextAsset(connman);
     }
 }

@@ -3068,10 +3068,9 @@ OutputType CWallet::TransactionChangeType(OutputType change_type, const std::vec
     return m_default_address_type;
 }
 
-//bool CWallet::CreateTransaction(const std::vector<CRecipient>& vecSend, CTransactionRef& tx, CReserveKey& reservekey, CAmount& nFeeRet,
-//                         int& nChangePosInOut, std::string& strFailReason, const CCoinControl& coin_control, bool sign)
 bool CWallet::CreateTransaction(const std::vector<CRecipient>& vecSend, CTransactionRef& tx, CReserveKey& reservekey, CAmount& nFeeRet,
-                         int& nChangePosInOut, std::string& strFailReason, const CCoinControl& coin_control, bool sign, AvailableCoinsType nCoinType, bool fUseInstantSend)
+                         int& nChangePosInOut, std::string& strFailReason, 
+                         const CCoinControl& coin_control, bool sign, AvailableCoinsType nCoinType, bool fUseInstantSend)
 //
 {
     // Dash
@@ -3278,8 +3277,6 @@ bool CWallet::CreateTransaction(const std::vector<CRecipient>& vecSend, CTransac
                                     strFailReason += " " + strprintf(_("InstantSend requires inputs with at least %d confirmations, you might need to wait a few minutes and try again."), INSTANTSEND_CONFIRMATIONS_REQUIRED);
                                 }
                             }
-                            //
-
                             return false;
                         }
                     }
@@ -3390,33 +3387,6 @@ bool CWallet::CreateTransaction(const std::vector<CRecipient>& vecSend, CTransac
                     return false;
                 }
 
-/* SIN TODO: something wrong here
-                // Dash
-                dPriority = wtxNew.tx->ComputePriority(dPriority, nBytes);
-
-                // Can we complete this as a free transaction?
-                // Note: InstantSend transaction can't be a free one
-                if (!fUseInstantSend && fSendFreeTransactions && nBytes <= MAX_FREE_TRANSACTION_CREATE_SIZE)
-                {
-                    // Not enough fee: enough priority?
-                    double dPriorityNeeded = mempool.estimateSmartPriority(nTxConfirmTarget);
-                    // Require at least hard-coded AllowFree.
-                    if (dPriority >= dPriorityNeeded && AllowFree(dPriority))
-                        break;
-
-                    // Small enough, and priority high enough, to send for free
-//                    if (dPriorityNeeded > 0 && dPriority >= dPriorityNeeded)
-//                        break;
-                }
-                CAmount nFeeNeeded = max(nFeePay, GetMinimumFee(*this, nBytes, coin_control, ::mempool, ::feeEstimator, &feeCals));
-                // SIN TODO: check
-                //if (coinControl && nFeeNeeded > 0 && coinControl->nMinimumTotalFee > nFeeNeeded) {
-                //    nFeeNeeded = coinControl->nMinimumTotalFee;
-                if (nFeeNeeded > 0 && *coin_control.nMinimumTotalFee > nFeeNeeded) {
-                    nFeeNeeded = *coin_control.nMinimumTotalFee;
-                }
-                //
-				*/
                 if(fUseInstantSend) {
                     nFeeNeeded = std::max(nFeeNeeded, CTxLockRequest(txNew).GetMinFee());
                 }

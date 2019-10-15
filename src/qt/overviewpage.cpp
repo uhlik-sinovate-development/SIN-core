@@ -24,6 +24,7 @@
 #include <shutdown.h>
 #include <instantx.h>
 #include <masternode-sync.h>
+#include <infinitynodeman.h>
 
 #include <QAbstractItemDelegate>
 #include <QPainter>
@@ -170,8 +171,9 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
     connect(ui->labelWalletStatus, SIGNAL(clicked()), this, SLOT(handleOutOfSyncWarningClicks()));
     connect(ui->labelTransactionsStatus, SIGNAL(clicked()), this, SLOT(handleOutOfSyncWarningClicks()));
 
-    // that's it for litemode
-    if(fLiteMode) return;
+    timer = new QTimer(this);
+    connect(timer, SIGNAL(timeout()), this, SLOT(infinityNodeStat()));
+    timer->start(1000);
 }
 
 void OverviewPage::handleTransactionClicked(const QModelIndex &index)
@@ -187,7 +189,51 @@ void OverviewPage::handleOutOfSyncWarningClicks()
 
 OverviewPage::~OverviewPage()
 {
+    if(timer) disconnect(timer, SIGNAL(timeout()), this, SLOT(privateSendStatus()));
     delete ui;
+}
+
+void OverviewPage::infinityNodeStat()
+{
+    std::map<COutPoint, CInfinitynode> mapInfinitynodes = infnodeman.GetFullInfinitynodeMap();
+    std::map<COutPoint, CInfinitynode> mapInfinitynodesNonMatured = infnodeman.GetFullInfinitynodeNonMaturedMap();
+    int total = 0, totalBIG = 0, totalMID = 0, totalLIL = 0, totalUnknown = 0;
+    for (auto& infpair : mapInfinitynodes) {
+        ++total;
+        CInfinitynode inf = infpair.second;
+        int sintype = inf.getSINType();
+        if (sintype == 10) ++totalBIG;
+        else if (sintype == 5) ++totalMID;
+        else if (sintype == 1) ++totalLIL;
+    }
+
+    int totalNonMatured = 0, totalBIGNonMatured = 0, totalMIDNonMatured = 0, totalLILNonMatured = 0, totalUnknownNonMatured = 0;
+    for (auto& infpair : mapInfinitynodesNonMatured) {
+        ++totalNonMatured;
+        CInfinitynode inf = infpair.second;
+        int sintype = inf.getSINType();
+        if (sintype == 10) ++totalBIGNonMatured;
+        else if (sintype == 5) ++totalMIDNonMatured;
+        else if (sintype == 1) ++totalLILNonMatured;
+    }
+
+    QString strTotalNodeText(tr("%1 nodes (last scan: %2)").arg(total + totalNonMatured).arg(infnodeman.getLastScanWithLimit()));
+    QString strBIGNodeText(tr("%1").arg(totalBIG));
+    QString strMIDNodeText(tr("%1").arg(totalMID));
+    QString strLILNodeText(tr("%1").arg(totalLIL));
+
+    QString strBIGNodeQueuedText(tr("%1").arg(totalBIGNonMatured));
+    QString strMIDNodeQueuedText(tr("%1").arg(totalMIDNonMatured));
+    QString strLILNodeQueuedText(tr("%1").arg(totalLILNonMatured));
+
+    ui->labelStatisticTotalNode->setText(strTotalNodeText);
+    ui->labelBIGNode->setText(strBIGNodeText);
+    ui->labelMIDNode->setText(strMIDNodeText);
+    ui->labelLILNode->setText(strLILNodeText);
+
+    ui->labelBIGNodeQueued->setText(strBIGNodeQueuedText);
+    ui->labelMIDNodeQueued->setText(strMIDNodeQueuedText);
+    ui->labelLILNodeQueued->setText(strLILNodeQueuedText);
 }
 
 void OverviewPage::setBalance(const interfaces::WalletBalances& balances)

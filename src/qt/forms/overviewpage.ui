@@ -400,6 +400,157 @@
         </widget>
        </item>
        <item>
+        <widget class="QFrame" name="frameStatistic">
+         <property name="minimumSize">
+          <size>
+           <width>348</width>
+           <height>200</height>
+          </size>
+         </property>
+         <property name="layoutDirection">
+          <enum>Qt::LeftToRight</enum>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QVBoxLayout" name="VerticalLayout_ST1">
+          <property name="topMargin">
+           <number>12</number>
+          </property>
+          <item>
+           <layout class="QGridLayout" name="statisticFormLayout">
+            <property name="spacing">
+             <number>12</number>
+            </property>
+            <property name="horizontalSpacing">
+             <number>12</number>
+            </property>
+            <property name="verticalSpacing">
+             <number>12</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <item row="0" column="0">
+             <widget class="QLabel" name="labelStatisticTotalNodeText">
+              <property name="text">
+               <string notr="true">Total</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QLabel" name="labelStatisticTotalNode">
+              <property name="text">
+               <string notr="true">1125</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="2">
+             <widget class="QLabel" name="labelNullString">
+              <property name="text">
+               <string notr="true"></string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="labelSinType">
+              <property name="text">
+               <string>SinType</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QLabel" name="labelNodeMatured">
+              <property name="text">
+               <string notr="true">Matured</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="2">
+             <widget class="QLabel" name="labelNodeQueued">
+              <property name="text">
+               <string notr="true">Queued</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="labelBIGNodeText">
+              <property name="text">
+               <string>BIG</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QLabel" name="labelBIGNode">
+              <property name="text">
+               <string notr="true">375</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="2">
+             <widget class="QLabel" name="labelBIGNodeQueued">
+              <property name="text">
+               <string notr="true">0</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QLabel" name="labelMIDNodeText">
+              <property name="text">
+               <string>MID</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QLabel" name="labelMIDNode">
+              <property name="text">
+               <string notr="true">375</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="2">
+             <widget class="QLabel" name="labelMIDNodeQueued">
+              <property name="text">
+               <string notr="true">0</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <widget class="QLabel" name="labelLILNodeText">
+              <property name="text">
+               <string>LIL</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="1">
+             <widget class="QLabel" name="labelLILNode">
+              <property name="text">
+               <string notr="true">375</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="2">
+             <widget class="QLabel" name="labelLILNodeQueued">
+              <property name="text">
+               <string notr="true">0</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
         <spacer name="verticalSpacer">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
