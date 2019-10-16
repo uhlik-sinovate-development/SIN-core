@@ -1004,6 +1004,109 @@ qproperty-alignment: 'AlignVCenter | AlignLeft';
 font-size:12px;
 margin-left:16px;
 }
+
+.QLabel#labelStatisticTotalNode { /* Total Node */
+qproperty-alignment: 'AlignVCenter | AlignRight';
+font-size:18px;
+color:#7982A1;
+margin-left:16px;
+}
+
+QWidget .QFrame#frameStatistic .QLabel#labelBIGNodeText { /* BIG SIN Label */
+qproperty-alignment: 'AlignVCenter | AlignLeft';
+font-weight:bold;
+font-size:18px;
+color:#ffd700;
+margin-left:16px;
+}
+
+QWidget .QFrame#frameStatistic .QLabel#labelMIDNodeText { /* MID SIN Label */
+qproperty-alignment: 'AlignVCenter | AlignLeft';
+font-weight:bold;
+font-size:18px;
+color:#c0c0c0;
+margin-left:16px;
+}
+
+QWidget .QFrame#frameStatistic .QLabel#labelLILNodeText { /* LIL SIN Label */
+qproperty-alignment: 'AlignVCenter | AlignLeft';
+font-weight:bold;
+font-size:18px;
+color:#cd7f32;
+margin-left:16px;
+}
+
+QWidget .QFrame#frameStatistic .QLabel#labelSinType { /* SIN Type Label */
+qproperty-alignment: 'AlignVCenter | AlignLeft';
+font-weight:bold;
+font-size:16px;
+color:#ffffff;
+margin-left:16px;
+}
+
+QWidget .QFrame#frameStatistic .QLabel#labelNodeMatured { /* Node Matured Label */
+qproperty-alignment: 'AlignVCenter | AlignLeft';
+font-weight:bold;
+font-size:16px;
+color:#ffffff;
+}
+
+QWidget .QFrame#frameStatistic .QLabel#labelNodeQueued { /* Node Queued Label */
+qproperty-alignment: 'AlignVCenter | AlignLeft';
+font-weight:bold;
+font-size:16px;
+color:#ffffff;
+
+}
+
+QWidget .QFrame#frameStatistic .QLabel#labelBIGNode { /* Total BIG Node Label */
+qproperty-alignment: 'AlignVCenter | AlignLeft';
+font-weight:bold;
+font-size:18px;
+color:#ffd700;
+margin-left:6px;
+}
+
+QWidget .QFrame#frameStatistic .QLabel#labelMIDNode { /* Total MID Node Label */
+qproperty-alignment: 'AlignVCenter | AlignLeft';
+font-weight:bold;
+font-size:18px;
+color:#c0c0c0;
+margin-left:6px;
+}
+
+QWidget .QFrame#frameStatistic .QLabel#labelLILNode { /* Total LIL Node Label */
+qproperty-alignment: 'AlignVCenter | AlignLeft';
+font-weight:bold;
+font-size:18px;
+color:#cd7f32;
+margin-left:6px;
+}
+
+QWidget .QFrame#frameStatistic .QLabel#labelBIGNodeQueued { /* BIG Node Queued Label */
+qproperty-alignment: 'AlignVCenter | AlignLeft';
+font-weight:bold;
+font-size:18px;
+color:#ffd700;
+margin-left:6px;
+}
+
+QWidget .QFrame#frameStatistic .QLabel#labelMIDNodeQueued { /* MID Node Queued Label */
+qproperty-alignment: 'AlignVCenter | AlignLeft';
+font-weight:bold;
+font-size:18px;
+color:#c0c0c0;
+margin-left:6px;
+}
+
+QWidget .QFrame#frameStatistic .QLabel#labelLILNodeQueued { /* LIL Node Queued Label */
+qproperty-alignment: 'AlignVCenter | AlignLeft';
+font-weight:bold;
+font-size:18px;
+color:#cd7f32;
+margin-left:6px;
+}
+
 /* RECENT TRANSACTIONS */
 
 QWidget .QFrame#frame_2 { /* Transactions Widget */
