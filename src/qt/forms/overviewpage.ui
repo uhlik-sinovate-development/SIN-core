@@ -422,39 +422,16 @@
           </property>
           <item>
            <layout class="QGridLayout" name="statisticFormLayout">
-            <property name="spacing">
-             <number>12</number>
-            </property>
-            <property name="horizontalSpacing">
-             <number>12</number>
-            </property>
-            <property name="verticalSpacing">
-             <number>12</number>
-            </property>
             <property name="topMargin">
              <number>0</number>
             </property>
-            <item row="0" column="0">
-             <widget class="QLabel" name="labelStatisticTotalNodeText">
-              <property name="text">
-               <string notr="true">Total</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QLabel" name="labelStatisticTotalNode">
-              <property name="text">
-               <string notr="true">1125</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-              </property>
-             </widget>
-            </item>
+            <property name="spacing">
+             <number>12</number>
+            </property>
             <item row="0" column="2">
              <widget class="QLabel" name="labelNullString">
               <property name="text">
-               <string notr="true"></string>
+               <string notr="true"/>
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -548,6 +525,16 @@
            </layout>
           </item>
          </layout>
+        </widget>
+       </item>
+       <item alignment="Qt::AlignLeft|Qt::AlignVCenter">
+        <widget class="QLabel" name="labelStatisticTotalNode">
+         <property name="text">
+          <string notr="true">1125</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
         </widget>
        </item>
        <item>

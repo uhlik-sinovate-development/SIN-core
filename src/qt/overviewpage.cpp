@@ -217,7 +217,7 @@ void OverviewPage::infinityNodeStat()
         else if (sintype == 1) ++totalLILNonMatured;
     }
 
-    QString strTotalNodeText(tr("%1 nodes (last scan: %2)").arg(total + totalNonMatured).arg(infnodeman.getLastScanWithLimit()));
+    QString strTotalNodeText(tr("Total: %1 nodes (Last Scan: %2)").arg(total + totalNonMatured).arg(infnodeman.getLastScanWithLimit()));
     QString strBIGNodeText(tr("%1").arg(totalBIG));
     QString strMIDNodeText(tr("%1").arg(totalMID));
     QString strLILNodeText(tr("%1").arg(totalLIL));
