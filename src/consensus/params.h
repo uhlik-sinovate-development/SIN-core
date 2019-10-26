@@ -67,6 +67,8 @@ struct Params {
     int nLimitSINNODE_1;// integer
     int nLimitSINNODE_5;// integer
     int nLimitSINNODE_10;// integer
+    int nInfinityNodeBeginHeight;// integer
+    int nInfinityNodeGenesisStatement;// integer
 
     int nInstantSendKeepLock; // in blocks
 

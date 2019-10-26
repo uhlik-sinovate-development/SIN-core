@@ -28,14 +28,24 @@ private:
     // Keep track of current block height
     int nCachedBlockHeight;
 
-    static const int INF_BEGIN_HEIGHT = 165000;//user burnfund to create node
-    static const int INF_BEGIN_REWARD = 250000;//network reward node owner with new algo
     //make sure that this value is sup than chain reorg limit. After this depth, situation of MAP is matured
     static const int INF_MATURED_LIMIT = 55;
 
-    // map to hole all INFs
+    // map to hold all INFs
     std::map<COutPoint, CInfinitynode> mapInfinitynodes;
     std::map<COutPoint, CInfinitynode> mapInfinitynodesNonMatured;
+
+    // map to hold all reward statement
+    std::map<int, int> mapStatementBIG;
+    std::map<int, int> mapStatementMID;
+    std::map<int, int> mapStatementLIL;
+    int nBIGLastStmHeight;
+    int nMIDLastStmHeight;
+    int nLILLastStmHeight;
+    int nBIGLastStmSize;
+    int nMIDLastStmSize;
+    int nLILLastStmSize;
+
     // map to hold payee and lastPaid Height
     std::map<CScript, int> mapLastPaid;
     mutable CCriticalSection cs_LastPaid;
@@ -46,8 +56,6 @@ public:
     CInfinitynodeMan();
 
     int64_t nLastScanHeight;//last verification from blockchain
-    bool beginNewCyclePayment = true;
-    int nCyclePayment = 0;
 
     ADD_SERIALIZE_METHODS;
 
@@ -66,6 +74,16 @@ public:
         READWRITE(mapInfinitynodes);
         READWRITE(mapLastPaid);
         READWRITE(nLastScanHeight);
+        READWRITE(mapStatementBIG);
+        READWRITE(mapStatementMID);
+        READWRITE(mapStatementLIL);
+        READWRITE(nBIGLastStmHeight);
+        READWRITE(nMIDLastStmHeight);
+        READWRITE(nLILLastStmHeight);
+        READWRITE(nBIGLastStmSize);
+        READWRITE(nMIDLastStmSize);
+        READWRITE(nLILLastStmSize);
+
         if(ser_action.ForRead() && (strVersion != SERIALIZATION_VERSION_STRING)) {
             Clear();
         }
@@ -86,6 +104,7 @@ public:
     int Count();
     std::map<COutPoint, CInfinitynode> GetFullInfinitynodeMap() { LOCK(cs); return mapInfinitynodes; }
     std::map<COutPoint, CInfinitynode> GetFullInfinitynodeNonMaturedMap() { LOCK(cs); return mapInfinitynodesNonMatured; }
+    std::map<int, int> getStatementMap() { LOCK(cs); return mapStatementBIG; }
     std::map<CScript, int> GetFullLastPaidMap() { return mapLastPaid; }
     int64_t getLastScan(){return nLastScanHeight;}
     int64_t getLastScanWithLimit(){return nLastScanHeight + INF_MATURED_LIMIT;}
@@ -96,8 +115,11 @@ public:
     bool updateInfinitynodeList(int fromHeight);//call in init.cppp
     bool initialInfinitynodeList(int fromHeight);//call in init.cpp
 
+    bool deterministicRewardStatement(int nSinType);
     bool deterministicRewardAtHeight(int nBlockHeight, int nSinType);
     void calculInfinityNodeRank(int nBlockHeight);
+    std::pair<int, int> getLastStatementBySinType(int nSinType);
+    std::string getLastStatementString() const;
 
     void CheckAndRemove(CConnman& connman);
     /// This is dummy overload to be used for dumping/loading mncache.dat

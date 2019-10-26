@@ -91,6 +91,8 @@ public:
         consensus.nLimitSINNODE_5=375;
         consensus.nLimitSINNODE_10=375;
         consensus.nInstantSendKeepLock = 24;
+        consensus.nInfinityNodeBeginHeight=160000;
+        consensus.nInfinityNodeGenesisStatement=250000;
 
         consensus.nBudgetPaymentsStartBlock = 365 * 1440; // 1 common year
         consensus.nBudgetPaymentsCycleBlocks = 10958; // weekly
@@ -220,6 +222,9 @@ public:
         consensus.nLimitSINNODE_5=6;
         consensus.nLimitSINNODE_10=6;
         consensus.nInstantSendKeepLock = 24;
+        consensus.nInfinityNodeBeginHeight=100;
+        consensus.nInfinityNodeGenesisStatement=110;
+
         consensus.nBudgetPaymentsStartBlock = 365 * 1440; // 1 common year
         consensus.nBudgetPaymentsCycleBlocks = 10958; // weekly
         consensus.nBudgetPaymentsWindowBlocks = 100;
@@ -335,6 +340,9 @@ public:
         consensus.nLimitSINNODE_5=6;
         consensus.nLimitSINNODE_10=6;
         consensus.nInstantSendKeepLock = 24;
+        consensus.nInfinityNodeBeginHeight=100;
+        consensus.nInfinityNodeGenesisStatement=110;
+
         consensus.nBudgetPaymentsStartBlock = 365 * 1440; // 1 common year
         consensus.nBudgetPaymentsCycleBlocks = 10958; // weekly
         consensus.nBudgetPaymentsWindowBlocks = 100;
@@ -440,6 +448,9 @@ public:
     CRegTestParams() {
         strNetworkID = "regtest";
         consensus.nSubsidyHalvingInterval = 150;
+        consensus.nInfinityNodeBeginHeight=100;
+        consensus.nInfinityNodeGenesisStatement=110;
+
         consensus.BIP16Exception = uint256();
         consensus.BIP34Height = 100000000;
         consensus.BIP34Hash = uint256();
@@ -452,7 +463,7 @@ public:
         consensus.fPowNoRetargeting = true;
         consensus.nRuleChangeActivationThreshold = 108;
         consensus.nMinerConfirmationWindow = 144;
-	consensus.devAddressPubKey = "841e6bf56b99a59545da932de2efb23ab93b4f44";
+        consensus.devAddressPubKey = "841e6bf56b99a59545da932de2efb23ab93b4f44";
 
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = 0;

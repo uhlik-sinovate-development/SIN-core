@@ -123,9 +123,9 @@ void CInfinitynodeMan::CheckAndRemove(CConnman& connman)
     LOCK(cs);
 
     LogPrintf("CInfinitynodeMan::CheckAndRemove -- at Height: %d, last build height: %d nodes\n", nCachedBlockHeight, nLastScanHeight);
-    //first scan
+    //first scan -- normaly, list is built in init.cpp
     if (nLastScanHeight == 0 && nCachedBlockHeight > 0) {
-        buildInfinitynodeList(nCachedBlockHeight, INF_BEGIN_HEIGHT);
+        buildInfinitynodeList(nCachedBlockHeight, Params().GetConsensus().nInfinityNodeBeginHeight);
         return;
     }
 
@@ -142,9 +142,9 @@ void CInfinitynodeMan::CheckAndRemove(CConnman& connman)
 bool CInfinitynodeMan::initialInfinitynodeList(int nBlockHeight)
 {
     LOCK(cs);
-    assert(nBlockHeight >= INF_BEGIN_HEIGHT);
+    assert(nBlockHeight >= Params().GetConsensus().nInfinityNodeBeginHeight);
     LogPrintf("CInfinitynodeMan::initialInfinitynodeList -- initial at height: %d, last scan height: %d\n", nBlockHeight, nLastScanHeight);
-    buildInfinitynodeList(nBlockHeight, INF_BEGIN_HEIGHT);
+    buildInfinitynodeList(nBlockHeight, Params().GetConsensus().nInfinityNodeBeginHeight);
 }
 
 bool CInfinitynodeMan::updateInfinitynodeList(int nBlockHeight)
@@ -162,7 +162,7 @@ bool CInfinitynodeMan::buildInfinitynodeList(int nBlockHeight, int nLowHeight)
     mapInfinitynodesNonMatured.clear();
 
     //first run, make sure that all variable is clear
-    if (nLowHeight == INF_BEGIN_HEIGHT){
+    if (nLowHeight == Params().GetConsensus().nInfinityNodeBeginHeight){
         Clear();
     } else {
         nLowHeight = nLastScanHeight;
@@ -283,6 +283,72 @@ void CInfinitynodeMan::updateLastPaid()
     }
 }
 
+bool CInfinitynodeMan::deterministicRewardStatement(int nSinType)
+{
+    int stm_height_temp = Params().GetConsensus().nInfinityNodeGenesisStatement;
+    int stm_size_temp = 0;
+    mapStatementBIG.clear();
+
+    LOCK(cs);
+    while (stm_height_temp < nCachedBlockHeight)
+    {
+        std::map<COutPoint, CInfinitynode> mapInfinitynodesCopy;
+        int totalSinType = 0;
+        for (auto& infpair : mapInfinitynodes) {
+            CInfinitynode inf = infpair.second;
+            if (inf.getSINType() == nSinType && inf.getHeight() < stm_height_temp && stm_height_temp <= inf.getExpireHeight()){
+                mapInfinitynodesCopy[inf.vinBurnFund.prevout] = inf;
+                ++totalSinType;
+            }
+        }
+        //update variable for each SinType
+        if (nSinType == 10)
+        {
+            mapStatementBIG[stm_height_temp] = totalSinType;
+            nBIGLastStmHeight = stm_height_temp;
+            nBIGLastStmSize = totalSinType;
+        }
+
+        if (nSinType == 5)
+        {
+            mapStatementMID[stm_height_temp] = totalSinType;
+            nMIDLastStmHeight = stm_height_temp;
+            nMIDLastStmSize = totalSinType;
+        }
+
+        if (nSinType == 1)
+        {
+            mapStatementLIL[stm_height_temp] = totalSinType;
+            nLILLastStmHeight = stm_height_temp;
+            nLILLastStmSize = totalSinType;
+        }
+
+        //loop
+        stm_height_temp = stm_height_temp + totalSinType;
+        stm_size_temp = totalSinType;
+    }
+    return true;
+}
+
+std::pair<int, int> CInfinitynodeMan::getLastStatementBySinType(int nSinType)
+{
+    if (nSinType == 10) return std::make_pair(nBIGLastStmHeight, nBIGLastStmSize);
+    else if (nSinType == 5) return std::make_pair(nMIDLastStmHeight, nMIDLastStmSize);
+    else if (nSinType == 1) return std::make_pair(nLILLastStmHeight, nLILLastStmSize);
+    else return std::make_pair(0, 0);
+}
+
+std::string CInfinitynodeMan::getLastStatementString() const
+{
+    std::ostringstream info;
+
+    info << "BIG: [" << nBIGLastStmHeight << ":" << nBIGLastStmSize << "] - "
+            "MID: [" << nMIDLastStmHeight << ":" << nMIDLastStmSize << "] - "
+            "LIL: [" << nLILLastStmHeight << ":" << nLILLastStmSize << "]";
+
+    return info.str();
+}
+
 /**
 * Rank = 0 when node is expired
 * Rank > 0 node is not expired, order by nHeight and
@@ -315,7 +381,7 @@ void CInfinitynodeMan::calculInfinityNodeRank(int nBlockHeight)
 
 bool CInfinitynodeMan::deterministicRewardAtHeight(int nBlockHeight, int nSinType)
 {
-    assert(nBlockHeight >= INF_BEGIN_REWARD);
+    assert(nBlockHeight >= Params().GetConsensus().nInfinityNodeGenesisStatement);
     int nLastPaidScanDeepth = max(Params().GetConsensus().nLimitSINNODE_1, max(Params().GetConsensus().nLimitSINNODE_5, Params().GetConsensus().nLimitSINNODE_10));
 
     //step1: copy map for nSinType

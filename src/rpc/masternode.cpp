@@ -810,7 +810,7 @@ UniValue infinitynode(const JSONRPCRequest& request)
 
     if (request.fHelp  ||
         (strCommand != "build-list" && strCommand != "show-lastscan" && strCommand != "show-infos" && strCommand != "stats"
-                                    && strCommand != "show-lastpaid"))
+                                    && strCommand != "show-lastpaid" && strCommand != "build-stm" && strCommand != "show-stm"))
             throw std::runtime_error(
                 "infinitynode \"command\"...\n"
                 "Set of commands to execute masternode related actions\n"
@@ -839,6 +839,18 @@ UniValue infinitynode(const JSONRPCRequest& request)
 
         if (strMode == "lastscan")
             return infnodeman.getLastScan();
+    }
+
+    if (strCommand == "build-stm")
+    {
+            return infnodeman.deterministicRewardStatement(10) && 
+                   infnodeman.deterministicRewardStatement(5) && 
+                   infnodeman.deterministicRewardStatement(1);
+    }
+
+    if (strCommand == "show-stm")
+    {
+        return infnodeman.getLastStatementString();
     }
 
     if (strCommand == "show-lastscan")
