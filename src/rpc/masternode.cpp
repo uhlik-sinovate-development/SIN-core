@@ -843,8 +843,8 @@ UniValue infinitynode(const JSONRPCRequest& request)
 
     if (strCommand == "build-stm")
     {
-            return infnodeman.deterministicRewardStatement(10) && 
-                   infnodeman.deterministicRewardStatement(5) && 
+            return infnodeman.deterministicRewardStatement(10) &&
+                   infnodeman.deterministicRewardStatement(5) &&
                    infnodeman.deterministicRewardStatement(1);
     }
 

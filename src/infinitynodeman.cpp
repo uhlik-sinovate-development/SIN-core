@@ -136,6 +136,14 @@ void CInfinitynodeMan::CheckAndRemove(CConnman& connman)
                    nCachedBlockHeight, nLastScanHeight);
         buildInfinitynodeList(nCachedBlockHeight, nLastScanHeight);
     }
+
+    if (nBIGLastStmHeight + nBIGLastStmSize - nCachedBlockHeight < INF_MATURED_LIMIT)
+        deterministicRewardStatement(10);
+    if (nMIDLastStmHeight + nMIDLastStmSize - nCachedBlockHeight < INF_MATURED_LIMIT)
+        deterministicRewardStatement(5);
+    if (nLILLastStmHeight + nLILLastStmSize - nCachedBlockHeight < INF_MATURED_LIMIT)
+        deterministicRewardStatement(1);
+
     return;
 }
 
