@@ -85,7 +85,7 @@ DATE_WITH_TIME=`date "+%Y%m%d-%H:%M:%S"`
 
 # get current blockheight from SIN explorer and infinity node
 mn_blockheight=$($sin_cli getblockcount)
-exp_blockheight=$(curl -s http://explorer2.sinovate.io/getblockcount --max-time 45)
+exp_blockheight=$(curl -s http://explorer.sinovate.io/getblockcount --max-time 45)
 echo "$(date '+%Y%m%d-%H:%M:%S') : Checking link return: $exp_blockheight" >> ~/.sin/sin_control.log
 
 if [ -z "$exp_blockheight" -o ${#exp_blockheight} -gt 10 ]; then
