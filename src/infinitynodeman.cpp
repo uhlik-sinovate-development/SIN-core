@@ -23,6 +23,15 @@ struct CompareIntValue
     }
 };
 
+struct CompareUnit256Value
+{
+    bool operator()(const std::pair<arith_uint256, CInfinitynode*>& t1,
+                    const std::pair<arith_uint256, CInfinitynode*>& t2) const
+    {
+        return (t1.first != t2.first) ? (t1.first < t2.first) : (t1.second->vinBurnFund < t2.second->vinBurnFund);
+    }
+};
+
 CInfinitynodeMan::CInfinitynodeMan()
 : cs(),
   mapInfinitynodes(),
@@ -137,12 +146,20 @@ void CInfinitynodeMan::CheckAndRemove(CConnman& connman)
         buildInfinitynodeList(nCachedBlockHeight, nLastScanHeight);
     }
 
-    if (nBIGLastStmHeight + nBIGLastStmSize - nCachedBlockHeight < INF_MATURED_LIMIT)
+    if (nBIGLastStmHeight + nBIGLastStmSize - nCachedBlockHeight < INF_MATURED_LIMIT){
+        //calcul new Statement
         deterministicRewardStatement(10);
-    if (nMIDLastStmHeight + nMIDLastStmSize - nCachedBlockHeight < INF_MATURED_LIMIT)
+        //update rank for new Statement
+        calculInfinityNodeRank(nBIGLastStmHeight, 10, true);
+    }
+    if (nMIDLastStmHeight + nMIDLastStmSize - nCachedBlockHeight < INF_MATURED_LIMIT){
         deterministicRewardStatement(5);
-    if (nLILLastStmHeight + nLILLastStmSize - nCachedBlockHeight < INF_MATURED_LIMIT)
+        calculInfinityNodeRank(nMIDLastStmHeight, 5, true);
+    }
+    if (nLILLastStmHeight + nLILLastStmSize - nCachedBlockHeight < INF_MATURED_LIMIT){
         deterministicRewardStatement(1);
+        calculInfinityNodeRank(nLILLastStmHeight, 1, true);
+    }
 
     return;
 }
@@ -360,15 +377,21 @@ std::string CInfinitynodeMan::getLastStatementString() const
 /**
 * Rank = 0 when node is expired
 * Rank > 0 node is not expired, order by nHeight and
+*
+* called in CheckAndRemove
 */
-void CInfinitynodeMan::calculInfinityNodeRank(int nBlockHeight)
+std::map<int, CInfinitynode> CInfinitynodeMan::calculInfinityNodeRank(int nBlockHeight, int nSinType, bool updateList)
 {
     AssertLockHeld(cs);
     std::vector<std::pair<int, CInfinitynode*> > vecCInfinitynodeHeight;
+    std::map<int, CInfinitynode> retMapInfinityNodeRank;
 
     for (auto& infpair : mapInfinitynodes) {
         CInfinitynode inf = infpair.second;
-        if (inf.getExpireHeight() >= nBlockHeight)
+        //reinitial Rank to 0 all nodes of nSinType
+        if (inf.getSINType() == nSinType) infpair.second.setRank(0);
+        //put valid node in vector
+        if (inf.getSINType() == nSinType && inf.getExpireHeight() >= nBlockHeight && inf.getHeight() < nBlockHeight)
         {
             vecCInfinitynodeHeight.push_back(std::make_pair(inf.getHeight(), &infpair.second));
         }
@@ -376,22 +399,32 @@ void CInfinitynodeMan::calculInfinityNodeRank(int nBlockHeight)
 
     // Sort them low to high
     sort(vecCInfinitynodeHeight.begin(), vecCInfinitynodeHeight.end(), CompareIntValue());
-
+    //update Rank at nBlockHeight
     int rank=1;
     for (std::pair<int, CInfinitynode*>& s : vecCInfinitynodeHeight){
         auto it = mapInfinitynodes.find(s.second->vinBurnFund.prevout);
-        it->second.setRank(rank);
+        if(updateList) it->second.setRank(rank);
+        retMapInfinityNodeRank[rank] = *s.second;
         ++rank;
     }
 
-    return;
+    return retMapInfinityNodeRank;
+}
+
+/*
+* called in MN synced - just after download all last block
+*/
+void CInfinitynodeMan::calculAllInfinityNodesRankAtLastStm()
+{
+    LOCK(cs);
+        calculInfinityNodeRank(nBIGLastStmHeight, 10, true);
+        calculInfinityNodeRank(nMIDLastStmHeight, 5, true);
+        calculInfinityNodeRank(nLILLastStmHeight, 1, true);
 }
 
 bool CInfinitynodeMan::deterministicRewardAtHeight(int nBlockHeight, int nSinType)
 {
     assert(nBlockHeight >= Params().GetConsensus().nInfinityNodeGenesisStatement);
-    int nLastPaidScanDeepth = max(Params().GetConsensus().nLimitSINNODE_1, max(Params().GetConsensus().nLimitSINNODE_5, Params().GetConsensus().nLimitSINNODE_10));
-
     //step1: copy map for nSinType
     std::map<COutPoint, CInfinitynode> mapInfinitynodesCopy;
     int totalSinType = 0;
@@ -406,7 +439,7 @@ bool CInfinitynodeMan::deterministicRewardAtHeight(int nBlockHeight, int nSinTyp
         }
     }
 
-    calculInfinityNodeRank(nBlockHeight);
+    //calculInfinityNodeRank(nBlockHeight);
 
     //node created at (nBlockHeight - totalSinType) + 1 will not be in short-list of reward
     for (auto& infpair : mapInfinitynodesCopy) {
