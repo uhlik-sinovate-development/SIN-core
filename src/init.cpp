@@ -581,7 +581,7 @@ void SetupServerArgs()
 
 std::string LicenseInfo()
 {
-    const std::string URL_SOURCE_CODE = "<https://github.com/SINORG/>";
+    const std::string URL_SOURCE_CODE = "<https://github.com/SINOVATEblockchain/>";
     const std::string URL_WEBSITE = "<https://sinovate.io>";
 
     return CopyrightHolders(strprintf(_("Copyright (C) %i-%i"), 2009, COPYRIGHT_YEAR) + " ") + "\n" +
