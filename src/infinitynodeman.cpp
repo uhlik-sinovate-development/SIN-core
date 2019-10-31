@@ -312,7 +312,9 @@ bool CInfinitynodeMan::deterministicRewardStatement(int nSinType)
 {
     int stm_height_temp = Params().GetConsensus().nInfinityNodeGenesisStatement;
     int stm_size_temp = 0;
-    mapStatementBIG.clear();
+    if (nSinType == 10) mapStatementBIG.clear();
+    if (nSinType == 5) mapStatementMID.clear();
+    if (nSinType == 1) mapStatementLIL.clear();
 
     LOCK(cs);
     while (stm_height_temp < nCachedBlockHeight)
@@ -367,9 +369,9 @@ std::string CInfinitynodeMan::getLastStatementString() const
 {
     std::ostringstream info;
 
-    info << "BIG: [" << nBIGLastStmHeight << ":" << nBIGLastStmSize << "] - "
-            "MID: [" << nMIDLastStmHeight << ":" << nMIDLastStmSize << "] - "
-            "LIL: [" << nLILLastStmHeight << ":" << nLILLastStmSize << "]";
+    info << "BIG: [" << mapStatementBIG.size() << " / " << nBIGLastStmHeight << ":" << nBIGLastStmSize << "] - "
+            "MID: [" << mapStatementMID.size() << " / " << nMIDLastStmHeight << ":" << nMIDLastStmSize << "] - "
+            "LIL: [" << mapStatementLIL.size() << " / " << nLILLastStmHeight << ":" << nLILLastStmSize << "]";
 
     return info.str();
 }
@@ -422,28 +424,28 @@ void CInfinitynodeMan::calculAllInfinityNodesRankAtLastStm()
         calculInfinityNodeRank(nLILLastStmHeight, 1, true);
 }
 
-bool CInfinitynodeMan::deterministicRewardAtHeight(int nBlockHeight, int nSinType)
+bool CInfinitynodeMan::deterministicRewardAtHeight(int nBlockHeight, int nSinType, CInfinitynode& infinitynodeRet)
 {
     assert(nBlockHeight >= Params().GetConsensus().nInfinityNodeGenesisStatement);
-    //step1: copy map for nSinType
-    std::map<COutPoint, CInfinitynode> mapInfinitynodesCopy;
-    int totalSinType = 0;
+    //step1: copy mapStatement for nSinType
+    std::map<int, int> mapStatementSinType = getStatementMap(nSinType);
+
+    LOCK(cs);
+    //step2: find last Statement for nBlockHeight;
+    int nDelta = 100000; //big enough > number of 
+    int lastStatement = 0;
+    for(auto& stm : mapStatementSinType)
     {
-        LOCK(cs);
-        for (auto& infpair : mapInfinitynodes) {
-            CInfinitynode inf = infpair.second;
-            if (inf.getSINType() == nSinType && inf.getHeight() < nBlockHeight){
-                mapInfinitynodesCopy[inf.vinBurnFund.prevout] = inf;
-                ++totalSinType;
-            }
+        if (nBlockHeight > stm.first && nDelta > (nBlockHeight -stm.first))
+        {
+            nDelta = nBlockHeight -stm.first;
+            if(nDelta <= stm.second) lastStatement = stm.first;
         }
     }
+    //return false if not found statement
+    if (lastStatement == 0) return false;
 
-    //calculInfinityNodeRank(nBlockHeight);
-
-    //node created at (nBlockHeight - totalSinType) + 1 will not be in short-list of reward
-    for (auto& infpair : mapInfinitynodesCopy) {
-        CInfinitynode inf = infpair.second;
-    }
-    //
+    std::map<int, CInfinitynode> rankOfStatement = calculInfinityNodeRank(lastStatement, nSinType, false);
+    infinitynodeRet = rankOfStatement[nBlockHeight - lastStatement];
+    return true;
 }

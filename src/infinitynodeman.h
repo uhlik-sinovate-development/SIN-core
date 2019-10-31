@@ -104,7 +104,12 @@ public:
     int Count();
     std::map<COutPoint, CInfinitynode> GetFullInfinitynodeMap() { LOCK(cs); return mapInfinitynodes; }
     std::map<COutPoint, CInfinitynode> GetFullInfinitynodeNonMaturedMap() { LOCK(cs); return mapInfinitynodesNonMatured; }
-    std::map<int, int> getStatementMap() { LOCK(cs); return mapStatementBIG; }
+    std::map<int, int> getStatementMap(int nSinType) {
+        LOCK(cs);
+        if(nSinType == 10) return mapStatementBIG;
+        if(nSinType == 5) return mapStatementMID;
+        if(nSinType == 1) return mapStatementLIL;
+    }
     std::map<CScript, int> GetFullLastPaidMap() { return mapLastPaid; }
     int64_t getLastScan(){return nLastScanHeight;}
     int64_t getLastScanWithLimit(){return nLastScanHeight + INF_MATURED_LIMIT;}
@@ -116,7 +121,7 @@ public:
     bool initialInfinitynodeList(int fromHeight);//call in init.cpp
 
     bool deterministicRewardStatement(int nSinType);
-    bool deterministicRewardAtHeight(int nBlockHeight, int nSinType);
+    bool deterministicRewardAtHeight(int nBlockHeight, int nSinType, CInfinitynode& infinitynodeRet);
     std::map<int, CInfinitynode> calculInfinityNodeRank(int nBlockHeight, int nSinType, bool updateList=false);
     void calculAllInfinityNodesRankAtLastStm();
     std::pair<int, int> getLastStatementBySinType(int nSinType);

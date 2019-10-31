@@ -804,20 +804,32 @@ UniValue infinitynode(const JSONRPCRequest& request)
 #endif // ENABLE_WALLET
 
     std::string strCommand;
+    std::string strFilter = "";
+
     if (request.params.size() >= 1) {
         strCommand = request.params[0].get_str();
     }
+    if (request.params.size() == 2) strFilter = request.params[1].get_str();
+    if (request.params.size() > 2)
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Too many parameters");
 
     if (request.fHelp  ||
         (strCommand != "build-list" && strCommand != "show-lastscan" && strCommand != "show-infos" && strCommand != "stats"
-                                    && strCommand != "show-lastpaid" && strCommand != "build-stm" && strCommand != "show-stm"))
+                                    && strCommand != "show-lastpaid" && strCommand != "build-stm" && strCommand != "show-stm"
+                                    && strCommand != "show-candidate"))
             throw std::runtime_error(
                 "infinitynode \"command\"...\n"
                 "Set of commands to execute masternode related actions\n"
                 "\nArguments:\n"
                 "1. \"command\"        (string or set of strings, required) The command to execute\n"
                 "\nAvailable commands:\n"
-                "  build-list   - Build list of all infinitynode from block height 165000 to last block\n"
+                "  build-list                  - Build list of all infinitynode from block height 165000 to last block\n"
+                "  show-infos                  - Show the list of nodes and last information\n"
+                "  show-lastscan               - Last nHeight when list is updated\n"
+                "  show-lastpaid               - Last paid of all nodes\n"
+                "  build-stm                   - Build statement list from genesis parameter\n"
+                "  show-stm                    - Last statement of each SinType\n"
+                "  show-candidate nHeight      - Last statement of each SinType\n"
                 );
 
     UniValue obj(UniValue::VOBJ);
@@ -829,8 +841,6 @@ UniValue infinitynode(const JSONRPCRequest& request)
                 LOCK(cs_main);
                 pindex = chainActive.Tip();
         }
-        if (request.params.size() > 2)
-            throw JSONRPCError(RPC_INVALID_PARAMETER, "Too many parameters");
 
         if (request.params.size() == 1)
             return infnodeman.buildInfinitynodeList(pindex->nHeight);
@@ -851,6 +861,28 @@ UniValue infinitynode(const JSONRPCRequest& request)
     if (strCommand == "show-stm")
     {
         return infnodeman.getLastStatementString();
+    }
+
+    if (strCommand == "show-candidate")
+    {
+        if (request.params.size() != 2)
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Correct usage is 'infinitynode show-candidate \"nHeight\"'");
+        int nextHeight = 10;
+        nextHeight = atoi(strFilter);
+
+        if ( nextHeight < Params().GetConsensus().nInfinityNodeGenesisStatement)
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "nHeight must superior than Genesis Statement param");
+
+        CInfinitynode infBIG, infMID, infLIL;
+        infnodeman.deterministicRewardAtHeight(nextHeight, 10, infBIG);
+        infnodeman.deterministicRewardAtHeight(nextHeight, 5, infMID);
+        infnodeman.deterministicRewardAtHeight(nextHeight, 1, infLIL);
+
+        obj.push_back(Pair("Candidate BIG: ", infBIG.getCollateralAddress()));
+        obj.push_back(Pair("Candidate MID: ", infMID.getCollateralAddress()));
+        obj.push_back(Pair("Candidate LIL: ", infLIL.getCollateralAddress()));
+
+        return obj;
     }
 
     if (strCommand == "show-lastscan")
@@ -881,7 +913,8 @@ UniValue infinitynode(const JSONRPCRequest& request)
                                inf.getExpireHeight() << " " <<
                                inf.getRoundBurnValue() << " " <<
                                inf.getSINType() << " " <<
-                               inf.getLastRewardHeight();
+                               inf.getLastRewardHeight() << " " <<
+                               inf.getRank();
                 std::string strInfo = streamInfo.str();
                 obj.push_back(Pair(strOutpoint, strInfo));
         }
