@@ -104,12 +104,25 @@ public:
     int Count();
     std::map<COutPoint, CInfinitynode> GetFullInfinitynodeMap() { LOCK(cs); return mapInfinitynodes; }
     std::map<COutPoint, CInfinitynode> GetFullInfinitynodeNonMaturedMap() { LOCK(cs); return mapInfinitynodesNonMatured; }
-    std::map<int, int> getStatementMap(int nSinType) {
+    std::map<int, int> getStatementMap(int nSinType){
         LOCK(cs);
         if(nSinType == 10) return mapStatementBIG;
         if(nSinType == 5) return mapStatementMID;
         if(nSinType == 1) return mapStatementLIL;
     }
+    int getLastStatement(int nSinType){
+        LOCK(cs);
+        if(nSinType == 10) return nBIGLastStmHeight;
+        if(nSinType == 5) return nMIDLastStmHeight;
+        if(nSinType == 1) return nLILLastStmHeight;
+    }
+    int getLastStatementSize(int nSinType){
+        LOCK(cs);
+        if(nSinType == 10) return nBIGLastStmSize;
+        if(nSinType == 5) return nMIDLastStmSize;
+        if(nSinType == 1) return nLILLastStmSize;
+    }
+
     std::map<CScript, int> GetFullLastPaidMap() { return mapLastPaid; }
     int64_t getLastScan(){return nLastScanHeight;}
     int64_t getLastScanWithLimit(){return nLastScanHeight + INF_MATURED_LIMIT;}
@@ -126,6 +139,7 @@ public:
     void calculAllInfinityNodesRankAtLastStm();
     std::pair<int, int> getLastStatementBySinType(int nSinType);
     std::string getLastStatementString() const;
+    int getRoi(int nSinType, int totalNode);
 
     void CheckAndRemove(CConnman& connman);
     /// This is dummy overload to be used for dumping/loading mncache.dat

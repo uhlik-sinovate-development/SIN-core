@@ -173,7 +173,7 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
 
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(infinityNodeStat()));
-    timer->start(1000);
+    timer->start(3000);
 }
 
 void OverviewPage::handleTransactionClicked(const QModelIndex &index)
@@ -234,6 +234,23 @@ void OverviewPage::infinityNodeStat()
     ui->labelBIGNodeQueued->setText(strBIGNodeQueuedText);
     ui->labelMIDNodeQueued->setText(strMIDNodeQueuedText);
     ui->labelLILNodeQueued->setText(strLILNodeQueuedText);
+
+    QString strBIGNodeROIText(tr("%1").arg(infnodeman.getRoi(10, totalBIG)));
+    QString strMIDNodeROIText(tr("%1").arg(infnodeman.getRoi(5, totalMID)));
+    QString strLILNodeROIText(tr("%1").arg(infnodeman.getRoi(1, totalLIL)));
+
+    ui->labelBIGNodeRoi->setText(strBIGNodeROIText);
+    ui->labelMIDNodeRoi->setText(strMIDNodeROIText);
+    ui->labelLILNodeRoi->setText(strLILNodeROIText);
+
+    QString strBIGNodeSTMText(tr("%1 [%2]").arg(infnodeman.getLastStatement(10)).arg(infnodeman.getLastStatementSize(10)));
+    QString strMIDNodeSTMText(tr("%1 [%2]").arg(infnodeman.getLastStatement(5)).arg(infnodeman.getLastStatementSize(5)));
+    QString strLILNodeSTMText(tr("%1 [%2]").arg(infnodeman.getLastStatement(1)).arg(infnodeman.getLastStatementSize(1)));
+
+    ui->labelBIGNodeSTM->setText(strBIGNodeSTMText);
+    ui->labelMIDNodeSTM->setText(strMIDNodeSTMText);
+    ui->labelLILNodeSTM->setText(strLILNodeSTMText);
+
 }
 
 void OverviewPage::setBalance(const interfaces::WalletBalances& balances)

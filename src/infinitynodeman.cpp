@@ -164,6 +164,18 @@ void CInfinitynodeMan::CheckAndRemove(CConnman& connman)
     return;
 }
 
+int CInfinitynodeMan::getRoi(int nSinType, int totalNode)
+{
+     LOCK(cs);
+     int nBurnAmount = 0;
+     if (nSinType == 10) nBurnAmount = Params().GetConsensus().nMasternodeBurnSINNODE_10;
+     if (nSinType == 5) nBurnAmount = Params().GetConsensus().nMasternodeBurnSINNODE_5;
+     if (nSinType == 1) nBurnAmount = Params().GetConsensus().nMasternodeBurnSINNODE_1;
+
+     int nReward = GetMasternodePayment(nCachedBlockHeight, nSinType) / COIN;
+     return nBurnAmount / ((720 / totalNode) * nReward);
+}
+
 bool CInfinitynodeMan::initialInfinitynodeList(int nBlockHeight)
 {
     LOCK(cs);
