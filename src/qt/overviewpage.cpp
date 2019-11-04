@@ -35,7 +35,7 @@
 
 #define ICON_OFFSET 16
 #define DECORATION_SIZE 54
-#define NUM_ITEMS 5
+#define NUM_ITEMS 3
 #define NUM_ITEMS_ADV 7
 
 Q_DECLARE_METATYPE(interfaces::WalletBalances)
@@ -144,6 +144,9 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
     ui->pushButton_Telegram->setStatusTip(tr("Sinovate Telegram Channel"));
     ui->pushButton_Twitter->setStatusTip(tr("Sinovate Twitter Channel"));
     ui->pushButton_Explorer->setStatusTip(tr("Sinovate Block Explorer"));
+    ui->pushButton_Reddit->setStatusTip(tr("Sinovate Reddit"));
+    ui->pushButton_Facebook->setStatusTip(tr("Sinovate Facebook"));
+    ui->pushButton_Youtube->setStatusTip(tr("Sinovate Youtube Channel"));
 
 
     m_balances.balance = -1;
@@ -412,4 +415,13 @@ void OverviewPage::on_pushButton_Explorer_clicked() {
 }
 void OverviewPage::on_pushButton_Btctalk_clicked() {
     QDesktopServices::openUrl(QUrl("https://sinovate.io/links/btctalk", QUrl::TolerantMode));
+}
+void OverviewPage::on_pushButton_Reddit_clicked() {
+    QDesktopServices::openUrl(QUrl("https://sinovate.io/links/reddit", QUrl::TolerantMode));
+}
+void OverviewPage::on_pushButton_Youtube_clicked() {
+    QDesktopServices::openUrl(QUrl("https://sinovate.io/links/youtube", QUrl::TolerantMode));
+}
+void OverviewPage::on_pushButton_Facebook_clicked() {
+    QDesktopServices::openUrl(QUrl("https://sinovate.io/links/facebook", QUrl::TolerantMode));
 }
