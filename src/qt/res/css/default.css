@@ -38,14 +38,18 @@ QMenu::item:selected {
 }
 
 QToolBar {
-background-color:#000000;
-border:0px solid #000;
+background-color:#0C1522;
+border:0px solid #0C1522;
 padding:0;
 margin:0;
+background-image: url(':/images/sinovate_logo_horizontal');
+background-repeat:none;
+background-position:center right;
+border-right: 15px solid transparent;
 }
 
 QToolBar > QToolButton {
-background-color:#000000;
+background-color:#0C1522;
 border:0px solid #333;
 border-bottom-left-radius: 10px;
 border-bottom-right-radius: 10px;
@@ -876,6 +880,7 @@ font-weight: lighter;
 font-size: 10px;
 border: 0;
 margin-left:3px;
+margin-top: 12px;
 }
 QWidget .QFrame#frame_2 .QPushButton#labelTransactionsStatus { /* Wallet Sync Status */
 qproperty-alignment: 'AlignVCenter | AlignLeft';
@@ -884,7 +889,7 @@ background-color: transparent;
 font-size: 10px;
 font-weight: lighter;
 border: 0;
-margin-top: 83px;
+margin-top: 0px;
 margin-left:3px;
 }
 
@@ -1005,12 +1010,6 @@ font-size:12px;
 margin-left:16px;
 }
 
-.QLabel#labelStatisticTotalNode { /* Total Node */
-qproperty-alignment: 'AlignVCenter | AlignRight';
-font-size:18px;
-color:#7982A1;
-margin-left:16px;
-}
 
 QWidget .QFrame#frameStatistic .QLabel#labelBIGNodeText { /* BIG SIN Label */
 qproperty-alignment: 'AlignVCenter | AlignLeft';
@@ -1114,23 +1113,23 @@ min-width:410px;
 margin-right:20px;
 margin-left:0;
 margin-top:0;
-background-image: url(':/images/sinovate_logo_horizontal');
+/*background-image: url(':/images/sinovate_logo_horizontal');
 background-repeat:none;
-background-position:center top;
+background-position:center top;*/
 }
 
-QWidget .QFrame#frame_2 .QLabel#label_4 { /* Recent Transactions Label */
+/*QWidget .QFrame#frame_2 .QLabel#label_4 { 
 min-width:180px;
 color:#364860;
 margin-left:67px;
-margin-top:83px;
+margin-top:20px;
 margin-right:5px;
 padding-right:5px;
 font-weight:normal;
 font-size:18px;
 min-height:24px;
 }
-
+*/
 QWidget .QFrame#frame_2 .QLabel#labelTransactionsStatus { /* Recent Transactions Sync Status */
   qproperty-alignment: 'AlignVCenter | AlignLeft';
   color: red;
@@ -1145,7 +1144,7 @@ font-weight: bold;
 font-size:12px;
 color:#ffffff;
 max-width:369px;
-margin-top:12px;
+margin-top:0px;
 margin-left:0px; /* CSS Voodoo - set to -66px to hide default transaction icons */
 }
 
@@ -1716,6 +1715,15 @@ QPushButton#pushButton_Explorer {
 background-color:transparent;
 }
 QPushButton#pushButton_Btctalk {
+background-color:transparent;
+}
+QPushButton#pushButton_Reddit {
+background-color:transparent;
+}
+QPushButton#pushButton_Youtube {
+background-color:transparent;
+}
+QPushButton#pushButton_Facebook {
 background-color:transparent;
 }
 

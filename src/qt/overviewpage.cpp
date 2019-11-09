@@ -35,7 +35,7 @@
 
 #define ICON_OFFSET 16
 #define DECORATION_SIZE 54
-#define NUM_ITEMS 5
+#define NUM_ITEMS 3
 #define NUM_ITEMS_ADV 7
 
 Q_DECLARE_METATYPE(interfaces::WalletBalances)
@@ -144,6 +144,9 @@ OverviewPage::OverviewPage(const PlatformStyle *platformStyle, QWidget *parent) 
     ui->pushButton_Telegram->setStatusTip(tr("Sinovate Telegram Channel"));
     ui->pushButton_Twitter->setStatusTip(tr("Sinovate Twitter Channel"));
     ui->pushButton_Explorer->setStatusTip(tr("Sinovate Block Explorer"));
+    ui->pushButton_Reddit->setStatusTip(tr("Sinovate Reddit"));
+    ui->pushButton_Facebook->setStatusTip(tr("Sinovate Facebook"));
+    ui->pushButton_Youtube->setStatusTip(tr("Sinovate Youtube Channel"));
 
 
     m_balances.balance = -1;
@@ -222,9 +225,9 @@ void OverviewPage::infinityNodeStat()
     QString strMIDNodeText(tr("%1").arg(totalMID));
     QString strLILNodeText(tr("%1").arg(totalLIL));
 
-    QString strBIGNodeQueuedText(tr("%1").arg(totalBIGNonMatured));
-    QString strMIDNodeQueuedText(tr("%1").arg(totalMIDNonMatured));
-    QString strLILNodeQueuedText(tr("%1").arg(totalLILNonMatured));
+    QString strBIGNodeQueuedText(tr("Queued %1").arg(totalBIGNonMatured));
+    QString strMIDNodeQueuedText(tr("Queued %1").arg(totalMIDNonMatured));
+    QString strLILNodeQueuedText(tr("Queued %1").arg(totalLILNonMatured));
 
     ui->labelStatisticTotalNode->setText(strTotalNodeText);
     ui->labelBIGNode->setText(strBIGNodeText);
@@ -235,17 +238,17 @@ void OverviewPage::infinityNodeStat()
     ui->labelMIDNodeQueued->setText(strMIDNodeQueuedText);
     ui->labelLILNodeQueued->setText(strLILNodeQueuedText);
 
-    QString strBIGNodeROIText(tr("%1").arg(infnodeman.getRoi(10, totalBIG)));
-    QString strMIDNodeROIText(tr("%1").arg(infnodeman.getRoi(5, totalMID)));
-    QString strLILNodeROIText(tr("%1").arg(infnodeman.getRoi(1, totalLIL)));
+    QString strBIGNodeROIText(tr("ROI %1 days").arg(infnodeman.getRoi(10, totalBIG)));
+    QString strMIDNodeROIText(tr("ROI %1 days").arg(infnodeman.getRoi(5, totalMID)));
+    QString strLILNodeROIText(tr("ROI %1 days").arg(infnodeman.getRoi(1, totalLIL)));
 
     ui->labelBIGNodeRoi->setText(strBIGNodeROIText);
     ui->labelMIDNodeRoi->setText(strMIDNodeROIText);
     ui->labelLILNodeRoi->setText(strLILNodeROIText);
 
-    QString strBIGNodeSTMText(tr("%1 [%2]").arg(infnodeman.getLastStatement(10)).arg(infnodeman.getLastStatementSize(10)));
-    QString strMIDNodeSTMText(tr("%1 [%2]").arg(infnodeman.getLastStatement(5)).arg(infnodeman.getLastStatementSize(5)));
-    QString strLILNodeSTMText(tr("%1 [%2]").arg(infnodeman.getLastStatement(1)).arg(infnodeman.getLastStatementSize(1)));
+    QString strBIGNodeSTMText(tr("Statament %1 [%2]").arg(infnodeman.getLastStatement(10)).arg(infnodeman.getLastStatementSize(10)));
+    QString strMIDNodeSTMText(tr("Statament %1 [%2]").arg(infnodeman.getLastStatement(5)).arg(infnodeman.getLastStatementSize(5)));
+    QString strLILNodeSTMText(tr("Statament %1 [%2]").arg(infnodeman.getLastStatement(1)).arg(infnodeman.getLastStatementSize(1)));
 
     ui->labelBIGNodeSTM->setText(strBIGNodeSTMText);
     ui->labelMIDNodeSTM->setText(strMIDNodeSTMText);
@@ -412,4 +415,13 @@ void OverviewPage::on_pushButton_Explorer_clicked() {
 }
 void OverviewPage::on_pushButton_Btctalk_clicked() {
     QDesktopServices::openUrl(QUrl("https://sinovate.io/links/btctalk", QUrl::TolerantMode));
+}
+void OverviewPage::on_pushButton_Reddit_clicked() {
+    QDesktopServices::openUrl(QUrl("https://sinovate.io/links/reddit", QUrl::TolerantMode));
+}
+void OverviewPage::on_pushButton_Youtube_clicked() {
+    QDesktopServices::openUrl(QUrl("https://sinovate.io/links/youtube", QUrl::TolerantMode));
+}
+void OverviewPage::on_pushButton_Facebook_clicked() {
+    QDesktopServices::openUrl(QUrl("https://sinovate.io/links/facebook", QUrl::TolerantMode));
 }
