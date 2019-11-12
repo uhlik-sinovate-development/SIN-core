@@ -85,7 +85,7 @@ This means you cannot use a directory that located directly on the host Windows 
 
 Acquire the source in the usual way:
 
-    git clone https://github.com/bitcoin/bitcoin.git
+    git clone https://github.com/SINOVATEblockchain/SIN-core
 
 Once the source code is ready the build steps are below.
 
@@ -94,7 +94,7 @@ Once the source code is ready the build steps are below.
     make HOST=x86_64-w64-mingw32
     cd ..
     ./autogen.sh # not required when building from tarball
-    CONFIG_SITE=$PWD/depends/x86_64-w64-mingw32/share/config.site ./configure --prefix=/
+    CONFIG_SITE=$PWD/depends/x86_64-w64-mingw32/share/config.site ./configure --prefix=/ --disable-shared
     make
 
 ## Building for 32-bit Windows
@@ -113,7 +113,7 @@ This means you cannot use a directory that located directly on the host Windows 
 
 Acquire the source in the usual way:
 
-    git clone https://github.com/bitcoin/bitcoin.git
+    git clone https://github.com/SINOVATEblockchain/SIN-core
 
 Then build using:
 
