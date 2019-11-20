@@ -133,13 +133,13 @@ void CInfinitynodeMan::CheckAndRemove(CConnman& connman)
 
     LogPrintf("CInfinitynodeMan::CheckAndRemove -- at Height: %d, last build height: %d nodes\n", nCachedBlockHeight, nLastScanHeight);
     //first scan -- normaly, list is built in init.cpp
-    if (nLastScanHeight == 0 && nCachedBlockHeight > 0) {
+    if (nLastScanHeight == 0 && nCachedBlockHeight > Params().GetConsensus().nInfinityNodeBeginHeight) {
         buildInfinitynodeList(nCachedBlockHeight, Params().GetConsensus().nInfinityNodeBeginHeight);
         return;
     }
 
     //2nd scan and loop
-    if (nCachedBlockHeight > nLastScanHeight)
+    if (nCachedBlockHeight > nLastScanHeight && nLastScanHeight > 0)
     {
         LogPrint(BCLog::INFINITYNODE, "CInfinitynodeMan::CheckAndRemove -- block height %d and lastScan %d\n", 
                    nCachedBlockHeight, nLastScanHeight);
@@ -172,24 +172,25 @@ int CInfinitynodeMan::getRoi(int nSinType, int totalNode)
      if (nSinType == 5) nBurnAmount = Params().GetConsensus().nMasternodeBurnSINNODE_5;
      if (nSinType == 1) nBurnAmount = Params().GetConsensus().nMasternodeBurnSINNODE_1;
 
-     int nReward = GetMasternodePayment(nCachedBlockHeight, nSinType) / COIN;
-     return nBurnAmount / ((720 / totalNode) * nReward);
+     float nReward = GetMasternodePayment(nCachedBlockHeight, nSinType) / COIN;
+     float roi = nBurnAmount / ((720 / (float)totalNode) * nReward) ;
+     return (int) roi;
 }
 
 bool CInfinitynodeMan::initialInfinitynodeList(int nBlockHeight)
 {
     LOCK(cs);
-    assert(nBlockHeight >= Params().GetConsensus().nInfinityNodeBeginHeight);
+    if(nBlockHeight < Params().GetConsensus().nInfinityNodeBeginHeight) return false;
     LogPrintf("CInfinitynodeMan::initialInfinitynodeList -- initial at height: %d, last scan height: %d\n", nBlockHeight, nLastScanHeight);
-    buildInfinitynodeList(nBlockHeight, Params().GetConsensus().nInfinityNodeBeginHeight);
+    return buildInfinitynodeList(nBlockHeight, Params().GetConsensus().nInfinityNodeBeginHeight);
 }
 
 bool CInfinitynodeMan::updateInfinitynodeList(int nBlockHeight)
 {
     LOCK(cs);
-    assert(nBlockHeight >= nLastScanHeight);
+    if(nBlockHeight < nLastScanHeight) return false;
     LogPrintf("CInfinitynodeMan::updateInfinitynodeList -- update at height: %d, last scan height: %d\n", nBlockHeight, nLastScanHeight);
-    buildInfinitynodeList(nBlockHeight, nLastScanHeight);
+    return buildInfinitynodeList(nBlockHeight, nLastScanHeight);
 }
 
 bool CInfinitynodeMan::buildInfinitynodeList(int nBlockHeight, int nLowHeight)

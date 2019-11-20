@@ -1964,10 +1964,14 @@ bool AppInitMain()
     }
     if (infnodeman.getLastScan() == 0){
         uiInterface.InitMessage(_("Initial on-chain infinitynode list..."));
-        infnodeman.initialInfinitynodeList(chainActive.Height());
+        if ( chainActive.Height() < Params().GetConsensus().nInfinityNodeBeginHeight || infnodeman.initialInfinitynodeList(chainActive.Height()) == false){
+            LogPrintf("InfinityNode does not begin or error in initial list of node:\n");
+        }
     } else {
         uiInterface.InitMessage(_("Update on-chain infinitynode list..."));
-        infnodeman.updateInfinitynodeList(chainActive.Height());
+        if ( chainActive.Height() < infnodeman.getLastScan() || infnodeman.updateInfinitynodeList(chainActive.Height()) == false){
+            LogPrintf("Lastscan is higher than chainActive or error in update list of node:\n");
+        }
     }
 
     // ********************************************************* Step 11b1: init and load data

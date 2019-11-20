@@ -477,11 +477,12 @@ void CMasternodeSync::UpdatedBlockTip(const CBlockIndex *pindexNew, bool fInitia
 
     if (!IsBlockchainSynced() && fReachedBestHeader) {
         // Reached best header while being in initial mode.
-        infnodeman.updateInfinitynodeList(pindexBestHeader->nHeight);
-        bool updateStm = infnodeman.deterministicRewardStatement(10) &&
-                   infnodeman.deterministicRewardStatement(5) &&
-                   infnodeman.deterministicRewardStatement(1);
-        if (updateStm) infnodeman.calculAllInfinityNodesRankAtLastStm();
+        if (infnodeman.updateInfinitynodeList(pindexBestHeader->nHeight)){
+            bool updateStm = infnodeman.deterministicRewardStatement(10) &&
+                             infnodeman.deterministicRewardStatement(5) &&
+                             infnodeman.deterministicRewardStatement(1);
+            if (updateStm) infnodeman.calculAllInfinityNodesRankAtLastStm();
+        }
         // We must be at the tip already, let's move to the next asset.
         LogPrintf("CMasternodeSync::UpdatedBlockTip -- SwitchToNextAsset at height %d\n", pindexNew->nHeight);
         SwitchToNextAsset(connman);
