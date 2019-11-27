@@ -8,6 +8,7 @@
 #include <key_io.h>
 #include <util.h>
 #include <script/standard.h>
+#include <flat-database.h>
 
 
 CInfinitynodeMan infnodeman;
@@ -187,7 +188,12 @@ bool CInfinitynodeMan::initialInfinitynodeList(int nBlockHeight)
 
 bool CInfinitynodeMan::updateInfinitynodeList(int nBlockHeight)
 {
+    LogPrintf("CInfinitynodeMan::updateInfinitynodeList -- begin at %d...\n", nBlockHeight);
     LOCK(cs);
+    if (nLastScanHeight == 0) {
+        LogPrintf("CInfinitynodeMan::updateInfinitynodeList -- update list for 1st scan at Height %d\n",nBlockHeight); 
+        return buildInfinitynodeList(nBlockHeight, Params().GetConsensus().nInfinityNodeBeginHeight);
+    }
     if(nBlockHeight < nLastScanHeight) return false;
     LogPrintf("CInfinitynodeMan::updateInfinitynodeList -- update at height: %d, last scan height: %d\n", nBlockHeight, nLastScanHeight);
     return buildInfinitynodeList(nBlockHeight, nLastScanHeight);
@@ -301,6 +307,9 @@ bool CInfinitynodeMan::buildInfinitynodeList(int nBlockHeight, int nLowHeight)
 
     nLastScanHeight = nBlockHeight - INF_MATURED_LIMIT;
     updateLastPaid();
+
+    CFlatDB<CInfinitynodeMan> flatdb5("infinitynode.dat", "magicInfinityNodeCache");
+    flatdb5.Dump(infnodeman);
 
     LogPrintf("CInfinitynodeMan::buildInfinitynodeList -- list infinity node was built from blockchain and has %d nodes\n", Count());
     return true;
