@@ -928,19 +928,20 @@ UniValue infinitynode(const JSONRPCRequest& request)
  */
 static UniValue infinitynodeburnfund(const JSONRPCRequest& request)
 {
-	std::shared_ptr<CWallet> const wallet = GetWalletForJSONRPCRequest(request);
+    std::shared_ptr<CWallet> const wallet = GetWalletForJSONRPCRequest(request);
     CWallet* const pwallet = wallet.get();
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
         return NullUniValue;
     }
 
-    if (request.fHelp || request.params.size() != 1)
+    if (request.fHelp || request.params.size() != 2)
        throw std::runtime_error(
             "sendtoaddress amount "
             "\nSend an amount to BurnAddress.\n"
             "\nArguments:\n"
             "1. \"amount\"             (numeric or string, required) The amount in " + CURRENCY_UNIT + " to send. eg 0.1\n"
+            "2. \"NodeOwnerBackupAddress\"  (string, required) The SIN address to send to when you make a notinifation(new feature soon).\n"
             "\nResult:\n"
             "\"BURNtxid\"                  (string) The Burn transaction id. Need to run infinity node\n"
             "\"CollateralAddress\"         (string) Address of Collateral. Please send 10000 to this address.\n"
@@ -950,7 +951,7 @@ static UniValue infinitynodeburnfund(const JSONRPCRequest& request)
     // Make sure the results are valid at least up to the most recent block
     // the user could have gotten from another RPC command prior to now
     pwallet->BlockUntilSyncedToCurrentChain();
-	
+
     if(!masternodeSync.IsMasternodeListSynced())
     {
         throw JSONRPCError(RPC_TYPE_ERROR, "Please wait until InfinityNode data is synced!");
@@ -960,7 +961,7 @@ static UniValue infinitynodeburnfund(const JSONRPCRequest& request)
         mnodeman.CountSinType(5) >= Params().GetConsensus().nLimitSINNODE_5 &&
         mnodeman.CountSinType(10) >= Params().GetConsensus().nLimitSINNODE_10)
     {
-        throw JSONRPCError(RPC_TYPE_ERROR, "Number of SINNODE is FULL");
+        throw JSONRPCError(RPC_TYPE_ERROR, "Number of INFINITYNODE is FULL");
     }
 
     LOCK2(cs_main, pwallet->cs_wallet);
@@ -975,15 +976,38 @@ static UniValue infinitynodeburnfund(const JSONRPCRequest& request)
         nAmount != Params().GetConsensus().nMasternodeBurnSINNODE_5 * COIN &&
         nAmount != Params().GetConsensus().nMasternodeBurnSINNODE_10 * COIN)
     {
-        throw JSONRPCError(RPC_TYPE_ERROR, "Invalid amount to burn and run Infinity node");
+        throw JSONRPCError(RPC_TYPE_ERROR, "Invalid amount to burn and run Infinitynode");
     }
 
+    CTxDestination BKaddress = DecodeDestination(request.params[1].get_str());
+    if (!IsValidDestination(BKaddress))
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid SIN address for Backup");
+
+    std::map<COutPoint, CInfinitynode> mapInfinitynodes = infnodeman.GetFullInfinitynodeMap();
+    int totalNode = 0, totalBIG = 0, totalMID = 0, totalLIL = 0, totalUnknown = 0;
+    for (auto& infpair : mapInfinitynodes) {
+        ++totalNode;
+        CInfinitynode inf = infpair.second;
+        int sintype = inf.getSINType();
+        if (sintype == 10) ++totalBIG;
+        else if (sintype == 5) ++totalMID;
+        else if (sintype == 1) ++totalLIL;
+        else ++totalUnknown;
+    }
     //Limit node
     if ((nAmount == Params().GetConsensus().nMasternodeBurnSINNODE_1 * COIN && mnodeman.CountSinType(1) >= Params().GetConsensus().nLimitSINNODE_1) ||
         (nAmount == Params().GetConsensus().nMasternodeBurnSINNODE_5 * COIN && mnodeman.CountSinType(5) >= Params().GetConsensus().nLimitSINNODE_5) ||
         (nAmount == Params().GetConsensus().nMasternodeBurnSINNODE_10 * COIN && mnodeman.CountSinType(10) >= Params().GetConsensus().nLimitSINNODE_10) )
     {
         strError = strprintf("Error: Number of SINNODE for type %d is FULL", nAmount/COIN);
+        throw JSONRPCError(RPC_TYPE_ERROR, strError);
+    }
+
+    if ((nAmount == Params().GetConsensus().nMasternodeBurnSINNODE_1 * COIN && totalLIL >= Params().GetConsensus().nLimitSINNODE_1) ||
+        (nAmount == Params().GetConsensus().nMasternodeBurnSINNODE_5 * COIN && totalMID >= Params().GetConsensus().nLimitSINNODE_5) ||
+        (nAmount == Params().GetConsensus().nMasternodeBurnSINNODE_10 * COIN && totalBIG >= Params().GetConsensus().nLimitSINNODE_10) )
+    {
+        strError = strprintf("Error: Number of INFINITYNODE for type %d is FULL", nAmount/COIN);
         throw JSONRPCError(RPC_TYPE_ERROR, strError);
     }
     // BurnAddress
@@ -995,7 +1019,7 @@ static UniValue infinitynodeburnfund(const JSONRPCRequest& request)
         return false;
     CKeyID keyid = CKeyID(uint160(vSolutions[0]));
 
-	// Wallet comments
+    // Wallet comments
     std::set<CTxDestination> destinations;
     LOCK(pwallet->cs_wallet);
     for (COutput& out : vPossibleCoins) {
@@ -1045,7 +1069,7 @@ static UniValue infinitynodeburnfund(const JSONRPCRequest& request)
             coin_control.Select(COutPoint(out.tx->GetHash(), out.i));
 
             CScript script;
-            script = GetScriptForBurn(keyid, "burncoin");
+            script = GetScriptForBurn(keyid, request.params[1].get_str());
 
             CReserveKey reservekey(pwallet);
             CAmount nFeeRequired;
@@ -1071,7 +1095,8 @@ static UniValue infinitynodeburnfund(const JSONRPCRequest& request)
             entry.pushKV("BURNPUBLICKEY", HexStr(keyid.begin(), keyid.end()));
             entry.pushKV("BURNSCRIPT", HexStr(scriptPubKeyBurnAddress.begin(), scriptPubKeyBurnAddress.end()));
             entry.pushKV("BURNTX", tx->GetHash().GetHex());
-            entry.pushKV("COLLATERAL_ADDRESS",EncodeDestination(address));
+            entry.pushKV("OWNER_ADDRESS",EncodeDestination(address));
+            entry.pushKV("BACKUP_ADDRESS",EncodeDestination(BKaddress));
             //coins is good to burn
             results.push_back(entry);
             break; //immediat
