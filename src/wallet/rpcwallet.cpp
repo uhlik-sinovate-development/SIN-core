@@ -542,6 +542,90 @@ static CTransactionRef SendMoney(CWallet * const pwallet, const CTxDestination &
 }
 
 /**
+ *
+ */
+static UniValue exportsecuaddress(const JSONRPCRequest& request)
+{
+    std::shared_ptr<CWallet> const wallet = GetWalletForJSONRPCRequest(request);
+    CWallet* const pwallet = wallet.get();
+
+    if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
+        return NullUniValue;
+    }
+
+    if (request.fHelp || request.params.size() != 2)
+        throw std::runtime_error(
+            "exportsecuaddress SINAddress passphrase "
+            "\nExport an address.\n"
+            "\nArguments:\n"
+            "1. \"SINAddress\"  (string, required) The SIN address will be used in mobile.\n"
+            "2. \"passphrase\"  (numeric or string, required) The passphrase in mobile to send funds. eg 0.1\n"
+            "\nResult:\n"
+            "\"Encrypted String\"  (string) Encrypted privkey which will be imported in mobile\n"
+            "\nExamples:\n"
+            + HelpExampleCli("exportsecuaddress", "YourSinAddress passphrase")
+        );
+
+    UniValue results(UniValue::VARR);
+    UniValue entry(UniValue::VOBJ);
+
+    LOCK2(cs_main, pwallet->cs_wallet);
+
+    EnsureWalletIsUnlocked(pwallet);
+
+    std::string strAddress = request.params[0].get_str();
+    CTxDestination dest = DecodeDestination(strAddress);
+    if (!IsValidDestination(dest)) {
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid SIN address");
+    }
+    auto keyid = GetKeyForDestination(*pwallet, dest);
+    if (keyid.IsNull()) {
+        throw JSONRPCError(RPC_TYPE_ERROR, "Address does not refer to a key");
+    }
+    CKey vchSecret;
+    if (!pwallet->GetKey(keyid, vchSecret)) {
+        throw JSONRPCError(RPC_WALLET_ERROR, "Private key for address " + strAddress + " is not known");
+    }
+
+    std::string keyPassPhraseString = request.params[1].get_str();
+
+    CMasterKey kMasterKey;
+    kMasterKey.vchSalt.resize(WALLET_CRYPTO_SALT_SIZE);
+    GetStrongRandBytes(&kMasterKey.vchSalt[0], WALLET_CRYPTO_SALT_SIZE);
+
+    CCrypter crypter;
+    int64_t nStartTime = GetTimeMillis();
+    crypter.SetKeyFromPassphrase(SecureString(keyPassPhraseString.begin(), keyPassPhraseString.end()), kMasterKey.vchSalt, 25000, kMasterKey.nDerivationMethod);
+    kMasterKey.nDeriveIterations = static_cast<unsigned int>(2500000 / ((double)(GetTimeMillis() - nStartTime)));
+
+    nStartTime = GetTimeMillis();
+    crypter.SetKeyFromPassphrase(SecureString(keyPassPhraseString.begin(), keyPassPhraseString.end()), kMasterKey.vchSalt, kMasterKey.nDeriveIterations, kMasterKey.nDerivationMethod);
+    kMasterKey.nDeriveIterations = (kMasterKey.nDeriveIterations + static_cast<unsigned int>(kMasterKey.nDeriveIterations * 100 / ((double)(GetTimeMillis() - nStartTime)))) / 2;
+
+    if (kMasterKey.nDeriveIterations < 25000)
+        kMasterKey.nDeriveIterations = 25000;
+
+    LogPrintf("CWallet::exportmobileaddress -- Encrypting address with an nDeriveIterations %i, method: %i and vSalt: %s\n", kMasterKey.nDeriveIterations, kMasterKey.nDerivationMethod, HexStr(kMasterKey.vchSalt));
+
+    if (!crypter.SetKeyFromPassphrase(SecureString(keyPassPhraseString.begin(), keyPassPhraseString.end()), kMasterKey.vchSalt, kMasterKey.nDeriveIterations, kMasterKey.nDerivationMethod)) {
+        LogPrintf ("CWallet::exportmobileaddress -- can't create crypter\n");
+        return false;
+    }
+
+    if (!crypter.Encrypt(CKeyingMaterial(vchSecret.begin(), vchSecret.end()), kMasterKey.vchCryptedKey))
+        return false;
+
+    std::string encryptedString = HexStr(kMasterKey.vchCryptedKey.begin(), kMasterKey.vchCryptedKey.end());
+    LogPrintf("CWallet::exportmobileaddress -- Encrypted changePrivateKey: %s \n", encryptedString);
+
+    entry.pushKV("SINAddress", EncodeDestination(dest));
+    entry.pushKV("Encrypted String", encryptedString);
+    entry.pushKV("Passphrase", keyPassPhraseString);
+    results.push_back(entry);
+
+    return results;
+}
+/**
  * @xtdevcoin
  * this function notify that user has a data message
  */
@@ -5297,6 +5381,7 @@ static const CRPCCommand commands[] =
     /** Label functions (to replace non-balance account functions) */
     { "wallet",             "getaddressesbylabel",              &getaddressesbylabel,           {"label"} },
     { "wallet",             "getreceivedbylabel",               &getreceivedbylabel,            {"label","minconf"} },
+    { "wallet",             "exportsecuaddress",                &exportsecuaddress,             {"address","passphrase"} },
     { "wallet",             "listlabels",                       &listlabels,                    {"purpose"} },
     { "wallet",             "listreceivedbylabel",              &listreceivedbylabel,           {"minconf","include_empty","include_watchonly"} },
     { "wallet",             "setlabel",                         &setlabel,                      {"address","label"} },
