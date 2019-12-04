@@ -332,7 +332,7 @@
             <item row="1" column="0">
              <widget class="QLabel" name="labelBalanceText">
               <property name="text">
-               <string>Available</string>
+               <string>Available:</string>
               </property>
              </widget>
             </item>
@@ -621,7 +621,7 @@ padding-right: 10px;
        </property>
        <property name="styleSheet">
         <string notr="true">background-color: transparent;
-font: 75 16pt &quot;MS Shell Dlg 2&quot;;</string>
+font: 75 21px &quot;MS Shell Dlg 2&quot;;</string>
        </property>
        <property name="text">
         <string>BIG</string>
@@ -638,7 +638,7 @@ font: 75 16pt &quot;MS Shell Dlg 2&quot;;</string>
        </property>
        <property name="styleSheet">
         <string notr="true">background-color: transparent;
-font: 75 48pt &quot;MS Shell Dlg 2&quot;;
+font: 75 60px &quot;MS Shell Dlg 2&quot;;
 </string>
        </property>
        <property name="text">
@@ -661,7 +661,7 @@ font: 75 48pt &quot;MS Shell Dlg 2&quot;;
         </rect>
        </property>
        <property name="styleSheet">
-        <string notr="true">font: 10pt &quot;MS Shell Dlg 2&quot;;
+        <string notr="true">font: 13px &quot;MS Shell Dlg 2&quot;;
 color: rgb(121, 130, 161);
 background-color: transparent;</string>
        </property>
@@ -682,7 +682,7 @@ background-color: transparent;</string>
         </rect>
        </property>
        <property name="styleSheet">
-        <string notr="true">font: 12pt &quot;MS Shell Dlg 2&quot;;
+        <string notr="true">font: 16px &quot;MS Shell Dlg 2&quot;;
 color: rgb(121, 130, 161);
 background-color: transparent;</string>
        </property>
@@ -722,7 +722,7 @@ background-color: transparent;</string>
         </rect>
        </property>
        <property name="styleSheet">
-        <string notr="true">font: 10pt &quot;MS Shell Dlg 2&quot;;
+        <string notr="true">font: 13px &quot;MS Shell Dlg 2&quot;;
 color: rgb(121, 130, 161);
 background-color: transparent;</string>
        </property>
@@ -766,7 +766,7 @@ padding-right: 10px;</string>
        </property>
        <property name="styleSheet">
         <string notr="true">background-color: transparent;
-font: 75 16pt &quot;MS Shell Dlg 2&quot;;</string>
+font: 75 21px &quot;MS Shell Dlg 2&quot;;</string>
        </property>
        <property name="text">
         <string>MID</string>
@@ -783,7 +783,7 @@ font: 75 16pt &quot;MS Shell Dlg 2&quot;;</string>
        </property>
        <property name="styleSheet">
         <string notr="true">background-color: transparent;
-font: 75 48pt &quot;MS Shell Dlg 2&quot;;
+font: 75 60px &quot;MS Shell Dlg 2&quot;;
 </string>
        </property>
        <property name="text">
@@ -803,7 +803,7 @@ font: 75 48pt &quot;MS Shell Dlg 2&quot;;
         </rect>
        </property>
        <property name="styleSheet">
-        <string notr="true">font: 10pt &quot;MS Shell Dlg 2&quot;;
+        <string notr="true">font: 13px &quot;MS Shell Dlg 2&quot;;
 color: rgb(121, 130, 161);
 background-color: transparent;</string>
        </property>
@@ -824,7 +824,7 @@ background-color: transparent;</string>
         </rect>
        </property>
        <property name="styleSheet">
-        <string notr="true">font: 12pt &quot;MS Shell Dlg 2&quot;;
+        <string notr="true">font: 16px &quot;MS Shell Dlg 2&quot;;
 color: rgb(121, 130, 161);
 background-color: transparent;</string>
        </property>
@@ -864,7 +864,7 @@ background-color: transparent;</string>
         </rect>
        </property>
        <property name="styleSheet">
-        <string notr="true">font: 10pt &quot;MS Shell Dlg 2&quot;;
+        <string notr="true">font: 13px &quot;MS Shell Dlg 2&quot;;
 color: rgb(121, 130, 161);
 background-color: transparent;</string>
        </property>
@@ -908,7 +908,7 @@ padding-right: 10px;</string>
        </property>
        <property name="styleSheet">
         <string notr="true">background-color: transparent;
-font: 75 16pt &quot;MS Shell Dlg 2&quot;;</string>
+font: 75 21px &quot;MS Shell Dlg 2&quot;;</string>
        </property>
        <property name="text">
         <string>LIL</string>
@@ -925,7 +925,7 @@ font: 75 16pt &quot;MS Shell Dlg 2&quot;;</string>
        </property>
        <property name="styleSheet">
         <string notr="true">background-color: transparent;
-font: 75 48pt &quot;MS Shell Dlg 2&quot;;
+font: 75 60px &quot;MS Shell Dlg 2&quot;;
 </string>
        </property>
        <property name="text">
@@ -945,7 +945,7 @@ font: 75 48pt &quot;MS Shell Dlg 2&quot;;
         </rect>
        </property>
        <property name="styleSheet">
-        <string notr="true">font: 10pt &quot;MS Shell Dlg 2&quot;;
+        <string notr="true">font: 13px &quot;MS Shell Dlg 2&quot;;
 color: rgb(121, 130, 161);
 background-color: transparent;</string>
        </property>
@@ -966,7 +966,7 @@ background-color: transparent;</string>
         </rect>
        </property>
        <property name="styleSheet">
-        <string notr="true">font: 12pt &quot;MS Shell Dlg 2&quot;;
+        <string notr="true">font: 16px &quot;MS Shell Dlg 2&quot;;
 color: rgb(121, 130, 161);
 background-color: transparent;</string>
        </property>
@@ -1006,7 +1006,7 @@ background-color: transparent;</string>
         </rect>
        </property>
        <property name="styleSheet">
-        <string notr="true">font: 10pt &quot;MS Shell Dlg 2&quot;;
+        <string notr="true">font: 13px &quot;MS Shell Dlg 2&quot;;
 color: rgb(121, 130, 161);
 background-color: transparent;</string>
        </property>
@@ -1024,6 +1024,7 @@ background-color: transparent;</string>
     <widget class="QLabel" name="labelStatisticTotalNode">
      <property name="styleSheet">
       <string notr="true">margin-left: 50px;
+margin-top: 10px;
 font-size:14px;
 color:#7982A1;
 
@@ -1072,7 +1073,7 @@ color:#7982A1;
        <number>10</number>
       </property>
       <property name="bottomMargin">
-       <number>0</number>
+       <number>12</number>
       </property>
       <item>
        <widget class="QPushButton" name="pushButton_Website">
@@ -1143,7 +1144,7 @@ color:#7982A1;
         <property name="text">
          <string/>
         </property>
-         <property name="icon">
+        <property name="icon">
          <iconset>
           <normaloff>:/icons/reddit</normaloff>:/icons/reddit</iconset>
         </property>
@@ -1270,7 +1271,7 @@ color:#7982A1;
         <property name="text">
          <string/>
         </property>
-       <property name="icon">
+        <property name="icon">
          <iconset>
           <normaloff>:/icons/btctalk</normaloff>:/icons/btctalk</iconset>
         </property>
