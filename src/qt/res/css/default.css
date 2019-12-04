@@ -1,6 +1,7 @@
 /*******   BGcolor #0d1827  Orange #FF8204 */
 WalletFrame {
-border-image: url(':/images/drkblue_walletFrame_bg') 0 0 0 0 stretch stretch;
+/*border-image: url(':/images/drkblue_walletFrame_bg') 0 0 0 0 stretch stretch;*/
+background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop:0 #0d0d1a, stop:1 #191b41); color:#020024;
 border-top:0px solid #000;
 margin:0;
 padding:0;
@@ -66,7 +67,7 @@ font-weight:bold;
 }
 
 QMessageBox {
-background-color:#0d1827;
+background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop:0 #0d0d1a, stop:1 #191b41); color:#020024;
 }
 
 /*******************************************************/
@@ -102,7 +103,7 @@ font-size:12px;
 }
 
 .QValidatedLineEdit:disabled, .QLineEdit:disabled {
-background-color:#0d1827;
+background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop:0 #0d0d1a, stop:1 #191b41); color:#020024;
 }
 
 /*******************************************************/
@@ -521,7 +522,7 @@ QDialog .QTabWidget QTabBar::tab:selected {
  }
 
 QDialog .QTabWidget .QWidget {
-background-color:#0d1827;
+background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop:0 #0d0d1a, stop:1 #191b41); color:#020024;
 color:#fff;
 }
 
@@ -550,7 +551,7 @@ outline: 0;
 
 /* Dialog: Open URI */
 QDialog#OpenURIDialog {
-background-color:#0d1827;
+background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop:0 #0d0d1a, stop:1 #191b41); color:#020024;
 }
 
 QDialog#OpenURIDialog QLabel#label { /* URI Label */
@@ -576,7 +577,7 @@ border:1px solid #9e9e9e;
 
 /* Dialog: Sign / Verify Message */
 QDialog#SignVerifyMessageDialog {
-background-color:#0d1827;
+background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop:0 #0d0d1a, stop:1 #191b41); color:#020024;
 }
 
 QDialog#SignVerifyMessageDialog QPushButton#addressBookButton_SM { /* Address Book Button */
@@ -588,7 +589,7 @@ padding-right:10px;
 QDialog#SignVerifyMessageDialog QPlainTextEdit { /* Message Signing Text */
 border: 1px solid #FF8204;
 border-radius: 5px;
-background-color: #0d1827;
+background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop:0 #0d0d1a, stop:1 #191b41); color:#020024;
 color: #fff;
 }
 
@@ -652,7 +653,7 @@ QDialog#SignVerifyMessageDialog QPushButton#clearButton_VM:pressed {
 
 /* Dialog: Send and Receive */
 QWidget#AddressBookPage {
-background-color:#0d1827;
+background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop:0 #0d0d1a, stop:1 #191b41); color:#020024;
 }
 
 QWidget#AddressBookPage QPushButton#newAddress { /* New Address Button */
@@ -707,7 +708,7 @@ border: 1px solid #9e9e9e;
 }
 
 QWidget#AddressBookPage QTableView { /* Address Listing */
-background-color: #0d1827;
+background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop:0 #0d0d1a, stop:1 #191b41); color:#020024;
 font-size:12px;
 }
 
@@ -721,7 +722,7 @@ min-width:260px;
 
 /* Encrypt Wallet and Change Passphrase Dialog */
 QDialog#AskPassphraseDialog {
-background-color: #0d1827;
+background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop:0 #0d0d1a, stop:1 #191b41); color:#020024;
 }
 
 QDialog#AskPassphraseDialog QLabel#passLabel1, QDialog#AskPassphraseDialog QLabel#passLabel2, QDialog#AskPassphraseDialog QLabel#passLabel3 {
@@ -732,7 +733,7 @@ min-height:33px; /* base width of 25px for QLineEdit, plus padding and border */
 
 /* Options Dialog */
 QDialog#OptionsDialog {
-background-color:#0d1827;
+background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop:0 #0d0d1a, stop:1 #191b41); color:#020024;
 }
 
 QDialog#OptionsDialog QValueComboBox, QDialog#OptionsDialog QSpinBox {
@@ -788,7 +789,7 @@ min-height:33px;
 /* TOOLS MENU */
 
 QWidget#RPCConsole QTabWidget {
-background-color: #0d1827;
+background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop:0 #0d0d1a, stop:1 #191b41); color:#020024;
 }
 
 
@@ -796,7 +797,7 @@ background-color: #0d1827;
 
 /* Command Line Options Dialog */
 QDialog#HelpMessageDialog {
-  background-color: #0d1827;
+  background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop:0 #0d0d1a, stop:1 #191b41); color:#020024;
   }
 
   QTextEdit#helpMessage {
@@ -807,7 +808,7 @@ QDialog#HelpMessageDialog {
   }
 
 QDialog#HelpMessageDialog QScrollArea#scrollArea {
-	background-color: #0d1827;
+	background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop:0 #0d0d1a, stop:1 #191b41); color:#020024;
 }
 
 QDialog#HelpMessageDialog QScrollBar:vertical,
@@ -817,7 +818,7 @@ QDialog#HelpMessageDialog QScrollBar:horizontal {
 
 /* About SIN Dialog */
 QDialog#AboutDialog {
-background-color:#0d1827;
+background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop:0 #0d0d1a, stop:1 #191b41); color:#020024;
 }
 
 QDialog#AboutDialog QLabel#label, QDialog#AboutDialog QLabel#copyrightLabel, QDialog#AboutDialog QLabel#label_2 { /* About SIN Contents */
@@ -825,23 +826,23 @@ margin-left:10px;
 }
 
 QDialog#AboutDialog QLabel#label_2 { /* Margin for About Sinovate text */
-background-color: #0d1827;
+background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop:0 #0d0d1a, stop:1 #191b41); color:#020024;
 margin-right:10px;
 }
 
 QDialog#HelpMessageDialog QLabel#aboutMessage { /* Margin for About Sinovate text */
-background-color: #0d1827;
+background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop:0 #0d0d1a, stop:1 #191b41); color:#020024;
 margin-right:10px;
 }
 
 QDialog#HelpMessageDialog QWidget#scrollAreaWidgetContents { /* Margin for About Sinovate text */
-background-color: #0d1827;
+background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop:0 #0d0d1a, stop:1 #191b41); color:#020024;
 
 }
 
 /* Edit Address Dialog */
 QDialog#EditAddressDialog {
-background-color: #0d1827;
+background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop:0 #0d0d1a, stop:1 #191b41); color:#020024;
 }
 
 QDialog#EditAddressDialog QLabel {
@@ -1153,7 +1154,7 @@ margin-left:0px; /* CSS Voodoo - set to -66px to hide default transaction icons 
 /* MODAL OVERLAY */
 
   QWidget#bgWidget { /* The 'frame' overlaying the overview-page */
-    background-color:#0d1827 ;
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop:0 #0d0d1a, stop:1 #191b41); color:#020024;
       color:#ffffff;
       padding-left:10px;
       padding-right:10px;
@@ -1167,7 +1168,7 @@ margin-left:0px; /* CSS Voodoo - set to -66px to hide default transaction icons 
   }
 
   QWidget#contentWidget { /* The actual content with the text/buttons/etc... */
-  background-color: #0d1827 ;
+  background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop:0 #0d0d1a, stop:1 #191b41); color:#020024;
   border-top:0px solid #ffffff;
   margin:0;
   padding-top:20px;
@@ -1377,7 +1378,7 @@ color:#ffffff;
 /* COIN CONTROL POPUP */
 
 QDialog#CoinControlDialog { /* Coin Control Dialog Window */
-background-color: #0d1827;
+background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop:0 #0d0d1a, stop:1 #191b41); color:#020024;
 color: #fff;
 }
 
@@ -1615,20 +1616,20 @@ font-size:14px;
 
 /**************************** RECEIVE COINS DIALOG **************************************/
 QDialog#ReceiveRequestDialog {
-  background-color: #0d1827;
+  background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop:0 #0d0d1a, stop:1 #191b41); color:#020024;
 }
 
 QDialog#ReceiveRequestDialog QTextEdit {
 	/* Contents of Receive Coin Dialog */
 	border: 0;
-	background-color: #0d1827;
+	background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop:0 #0d0d1a, stop:1 #191b41); color:#020024;
 	color:#FFFFFF;
 }
 
 /* General QR-code DIALOG */
 
 QDialog#QRDialog {
-background-color: #0d1827;
+background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop:0 #0d0d1a, stop:1 #191b41); color:#020024;
 color: #fff;
 }
 
@@ -1694,7 +1695,7 @@ color:#333333;
 
 
 QDialog#TransactionDescDialog QTextEdit {
-background-color: #0d1827;
+background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop:0 #0d0d1a, stop:1 #191b41); color:#020024;
 border:1px solid #d7d7d7;
 color: #fff;
 }
