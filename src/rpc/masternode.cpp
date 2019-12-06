@@ -941,12 +941,12 @@ static UniValue infinitynodeburnfund(const JSONRPCRequest& request)
             "\nSend an amount to BurnAddress.\n"
             "\nArguments:\n"
             "1. \"amount\"             (numeric or string, required) The amount in " + CURRENCY_UNIT + " to send. eg 0.1\n"
-            "2. \"NodeOwnerBackupAddress\"  (string, required) The SIN address to send to when you make a notinifation(new feature soon).\n"
+            "2. \"NodeOwnerBackupAddress\"  (string, required) The SIN address to send to when you make a notification(new feature soon).\n"
             "\nResult:\n"
             "\"BURNtxid\"                  (string) The Burn transaction id. Need to run infinity node\n"
             "\"CollateralAddress\"         (string) Address of Collateral. Please send 10000 to this address.\n"
             "\nExamples:\n"
-            + HelpExampleCli("infinitynodeburnfund", "1000000")
+            + HelpExampleCli("infinitynodeburnfund", "1000000 SINBackupAddress")
         );
     // Make sure the results are valid at least up to the most recent block
     // the user could have gotten from another RPC command prior to now
@@ -1036,6 +1036,14 @@ static UniValue infinitynodeburnfund(const JSONRPCRequest& request)
 
         if (fValidAddress) {
             entry.pushKV("address", EncodeDestination(address));
+            /*check address is unique*/
+            for (auto& infpair : mapInfinitynodes) {
+                CInfinitynode inf = infpair.second;
+                if(inf.getCollateralAddress() == EncodeDestination(address)){
+                    strError = strprintf("Error: Address %s exist in list. Please use another address to make sure it is unique.", EncodeDestination(address));
+                    throw JSONRPCError(RPC_TYPE_ERROR, strError);
+                }
+            }
 
             auto i = pwallet->mapAddressBook.find(address);
             if (i != pwallet->mapAddressBook.end()) {

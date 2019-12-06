@@ -542,9 +542,59 @@ static CTransactionRef SendMoney(CWallet * const pwallet, const CTxDestination &
 }
 
 /**
+ * SIN functions
  *
  */
-static UniValue exportsecuaddress(const JSONRPCRequest& request)
+static UniValue decryptAES(const JSONRPCRequest& request)
+{
+    if (request.fHelp || request.params.size() != 4)
+        throw std::runtime_error(
+            "decryptAES SINAddress text passphrase vSalt nDeriveIterations"
+            "\nDescrypt a string.\n"
+            "\nArguments:\n"
+            "1. \"text\"  (string, required) Hex String to be decrypted.\n"
+            "2. \"passphrase\"  (string, required) The passphrase\n"
+            "3. \"vSalt\"  (string, required) vector Salt. Output of encryption\n"
+            "4. \"nDeriveIterations\"  (string, required) number of rounds to find key\n"
+            "\nResult:\n"
+            "\"Decrypted String\"  (string) Decrypted string\n"
+            "\nExamples:\n"
+            + HelpExampleCli("decryptAES", "YourSinAddress passphrase vSalt nDeriveIterations")
+        );
+
+    int nDeriveIterations = 32718;
+    int nDerivationMethod = 0;
+    std::string passphrase = request.params[1].get_str();
+    nDeriveIterations = atoi(request.params[3].get_str());
+
+    std::vector<unsigned char> vchCiphertext = ParseHex(request.params[0].get_str());
+    std::vector<unsigned char> vchSalt = ParseHex(request.params[2].get_str());
+
+    CCrypter decrypt;
+    decrypt.SetKeyFromPassphrase(SecureString(passphrase.begin(), passphrase.end()), vchSalt, nDeriveIterations, nDerivationMethod);
+
+    CKeyingMaterial vchDecrypted;
+    decrypt.Decrypt(vchCiphertext, vchDecrypted);
+    std::vector<unsigned char> vchPlaintext(vchDecrypted.begin(), vchDecrypted.end());
+    std::string decryptedText(vchPlaintext.begin(), vchPlaintext.end());
+
+
+    LogPrintf("CWallet::decryptAES -- Decrypted string: %s \n", decryptedText);
+
+    UniValue entry(UniValue::VOBJ);
+    entry.pushKV("Ciphertext", request.params[0].get_str());
+    entry.pushKV("passphrase", request.params[1].get_str());
+    entry.pushKV("vSalt", request.params[2].get_str());
+    entry.pushKV("nDeriveIterations", nDeriveIterations);
+    entry.pushKV("nDerivationMethod", nDerivationMethod);
+    entry.pushKV("Size", vchDecrypted.size());
+    entry.pushKV("Decrypted", decryptedText);
+
+    return entry;
+
+}
+
+static UniValue exportaddressnewpass(const JSONRPCRequest& request)
 {
     std::shared_ptr<CWallet> const wallet = GetWalletForJSONRPCRequest(request);
     CWallet* const pwallet = wallet.get();
@@ -566,9 +616,6 @@ static UniValue exportsecuaddress(const JSONRPCRequest& request)
             + HelpExampleCli("exportsecuaddress", "YourSinAddress passphrase")
         );
 
-    UniValue results(UniValue::VARR);
-    UniValue entry(UniValue::VOBJ);
-
     LOCK2(cs_main, pwallet->cs_wallet);
 
     EnsureWalletIsUnlocked(pwallet);
@@ -586,6 +633,9 @@ static UniValue exportsecuaddress(const JSONRPCRequest& request)
     if (!pwallet->GetKey(keyid, vchSecret)) {
         throw JSONRPCError(RPC_WALLET_ERROR, "Private key for address " + strAddress + " is not known");
     }
+
+    std::string keyString = EncodeSecret(vchSecret);
+    std::vector<unsigned char> vchKey(keyString.begin(), keyString.end());
 
     std::string keyPassPhraseString = request.params[1].get_str();
 
@@ -605,22 +655,37 @@ static UniValue exportsecuaddress(const JSONRPCRequest& request)
     if (kMasterKey.nDeriveIterations < 25000)
         kMasterKey.nDeriveIterations = 25000;
 
-    LogPrintf("CWallet::exportmobileaddress -- Encrypting address with an nDeriveIterations %i, method: %i and vSalt: %s\n", kMasterKey.nDeriveIterations, kMasterKey.nDerivationMethod, HexStr(kMasterKey.vchSalt));
-
     if (!crypter.SetKeyFromPassphrase(SecureString(keyPassPhraseString.begin(), keyPassPhraseString.end()), kMasterKey.vchSalt, kMasterKey.nDeriveIterations, kMasterKey.nDerivationMethod)) {
         LogPrintf ("CWallet::exportmobileaddress -- can't create crypter\n");
         return false;
     }
 
-    if (!crypter.Encrypt(CKeyingMaterial(vchSecret.begin(), vchSecret.end()), kMasterKey.vchCryptedKey))
+    if (!crypter.Encrypt(CKeyingMaterial(vchKey.begin(), vchKey.end()), kMasterKey.vchCryptedKey))
         return false;
 
     std::string encryptedString = HexStr(kMasterKey.vchCryptedKey.begin(), kMasterKey.vchCryptedKey.end());
-    LogPrintf("CWallet::exportmobileaddress -- Encrypted changePrivateKey: %s \n", encryptedString);
 
-    entry.pushKV("SINAddress", EncodeDestination(dest));
-    entry.pushKV("Encrypted String", encryptedString);
-    entry.pushKV("Passphrase", keyPassPhraseString);
+    //Descrypt
+    CCrypter decrypt;
+    decrypt.SetKeyFromPassphrase(SecureString(keyPassPhraseString.begin(), keyPassPhraseString.end()), kMasterKey.vchSalt, kMasterKey.nDeriveIterations, kMasterKey.nDerivationMethod);
+    CKeyingMaterial vchDecrypted;
+    decrypt.Decrypt(ParseHex(encryptedString), vchDecrypted);
+    std::vector<unsigned char> vchPlaintext(vchDecrypted.begin(), vchDecrypted.end());
+    std::string tmp2(vchPlaintext.begin(), vchPlaintext.end());
+
+    UniValue results(UniValue::VARR);
+    UniValue entry(UniValue::VOBJ);
+
+    entry.push_back(Pair("SINAddress", EncodeDestination(dest)));
+    entry.push_back(Pair("PrivkeyHex", HexStr(vchSecret.begin(), vchSecret.end())));
+    entry.push_back(Pair("Privkeyvch", std::string(vchKey.begin(), vchKey.end())));
+    entry.push_back(Pair("PrivkeyString", keyString));
+    entry.push_back(Pair("Encrypted String", encryptedString));
+    entry.push_back(Pair("Passphrase", keyPassPhraseString));
+    entry.push_back(Pair("vSalt", HexStr(kMasterKey.vchSalt)));
+    entry.push_back(Pair("nDeriveIterations", (int)kMasterKey.nDeriveIterations));
+    entry.push_back(Pair("nDerivationMethod", (int)kMasterKey.nDerivationMethod));
+    entry.push_back(Pair("Decrypted", tmp2));
     results.push_back(entry);
 
     return results;
@@ -5366,6 +5431,8 @@ static const CRPCCommand commands[] =
     { "wallet",             "rescanblockchain",                 &rescanblockchain,              {"start_height", "stop_height"} },
     { "wallet",             "sethdseed",                        &sethdseed,                     {"newkeypool","seed"} },
     { "wallet",             "infinitynodenotifydata",           &infinitynodenotifydata,        {"amount"} },
+    { "wallet",             "decryptAES",                       &decryptAES,                    {"text","passphrase","vSalt","nDeriveIterations"} },
+    { "wallet",             "exportaddressnewpass",             &exportaddressnewpass,          {"address","passphrase"} },
 
     /** Account functions (deprecated) */
     { "wallet",             "getaccountaddress",                &getaccountaddress,             {"account"} },
@@ -5381,7 +5448,6 @@ static const CRPCCommand commands[] =
     /** Label functions (to replace non-balance account functions) */
     { "wallet",             "getaddressesbylabel",              &getaddressesbylabel,           {"label"} },
     { "wallet",             "getreceivedbylabel",               &getreceivedbylabel,            {"label","minconf"} },
-    { "wallet",             "exportsecuaddress",                &exportsecuaddress,             {"address","passphrase"} },
     { "wallet",             "listlabels",                       &listlabels,                    {"purpose"} },
     { "wallet",             "listreceivedbylabel",              &listreceivedbylabel,           {"minconf","include_empty","include_watchonly"} },
     { "wallet",             "setlabel",                         &setlabel,                      {"address","label"} },
