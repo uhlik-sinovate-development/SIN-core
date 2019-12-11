@@ -161,20 +161,15 @@ public:
         assert(consensus.hashGenesisBlock == uint256S("000032bd27c65ec42967b7854a49df222abdfae8d9350a61083af8eab2a25e03"));
         assert(genesis.hashMerkleRoot == uint256S("c3555790e3804130514a674f3374b451dce058407dad6b9e82e191e198012680"));
 
-        vSeeds.push_back("sinexplorer.com");
-        vSeeds.push_back("139.59.139.105");
-        vSeeds.push_back("104.248.133.94");
-        vSeeds.push_back("104.248.17.3");
-        vSeeds.push_back("46.101.152.7");
-        vSeeds.push_back("46.101.227.238");
-        vSeeds.push_back("209.97.153.68");
-        vSeeds.push_back("159.89.194.138");
-        vSeeds.push_back("66.42.34.65");
-        vSeeds.push_back("149.28.173.242");
-        vSeeds.push_back("138.197.135.125");
-        vSeeds.push_back("167.172.42.45");
         vSeeds.push_back("88.198.108.224");
         vSeeds.push_back("95.216.140.124");
+        vSeeds.push_back("149.28.109.29");
+        vSeeds.push_back("104.248.4.79");
+        vSeeds.push_back("157.245.166.223");
+        vSeeds.push_back("206.189.147.193");
+        vSeeds.push_back("167.172.42.45");
+        vSeeds.push_back("138.197.135.125");
+
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,63);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,5);
