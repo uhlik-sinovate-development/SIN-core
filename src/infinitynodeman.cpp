@@ -9,6 +9,7 @@
 #include <util.h>
 #include <script/standard.h>
 #include <flat-database.h>
+#include <utilstrencodings.h>
 
 
 CInfinitynodeMan infnodeman;
@@ -228,26 +229,32 @@ bool CInfinitynodeMan::buildInfinitynodeList(int nBlockHeight, int nLowHeight)
         if (ReadBlockFromDisk(blockReadFromDisk, prevBlockIndex, Params().GetConsensus()))
         {
             for (const CTransactionRef& tx : blockReadFromDisk.vtx) {
+                //Not coinbase
                 if (!tx->IsCoinBase()) {
-                    bool fBurnFundTx = false;
                     for (unsigned int i = 0; i < tx->vout.size(); i++) {
                         const CTxOut& out = tx->vout[i];
-                        if (
+                        std::vector<std::vector<unsigned char>> vSolutions;
+                        txnouttype whichType;
+                        const CScript& prevScript = out.scriptPubKey;
+                        Solver(prevScript, whichType, vSolutions);
+                        //Send to BurnAddress
+                        if (whichType == TX_BURN_DATA && Params().GetConsensus().cBurnAddress == EncodeDestination(CKeyID(uint160(vSolutions[0]))))
+                        {
+                            //Amount for InfnityNode
+                            if (
                             ((Params().GetConsensus().nMasternodeBurnSINNODE_1 - 1) * COIN < out.nValue && out.nValue <= Params().GetConsensus().nMasternodeBurnSINNODE_1 * COIN) ||
                             ((Params().GetConsensus().nMasternodeBurnSINNODE_5 - 1) * COIN < out.nValue && out.nValue <= Params().GetConsensus().nMasternodeBurnSINNODE_5 * COIN) ||
                             ((Params().GetConsensus().nMasternodeBurnSINNODE_10 - 1) * COIN < out.nValue && out.nValue <= Params().GetConsensus().nMasternodeBurnSINNODE_10 * COIN)
-                        ) {
-                            std::vector<std::vector<unsigned char>> vSolutions;
-                            txnouttype whichType;
-                            const CScript& prevScript = out.scriptPubKey;
-                            Solver(prevScript, whichType, vSolutions);
-                            if (Params().GetConsensus().cBurnAddress == EncodeDestination(CKeyID(uint160(vSolutions[0]))))
-                            {
-                                fBurnFundTx = true;
+                            ) {
                                 COutPoint outpoint(tx->GetHash(), i);
                                 CInfinitynode inf(PROTOCOL_VERSION, outpoint);
                                 inf.setHeight(prevBlockIndex->nHeight);
                                 inf.setBurnValue(out.nValue);
+                                inf.setScriptPublicKey(prevScript);
+                                if (vSolutions.size() == 2){
+                                    std::string backupAddress(vSolutions[1].begin(), vSolutions[1].end());
+                                    inf.setBackupAddress(backupAddress);
+                                }
                                 //SINType
                                 CAmount nBurnAmount = out.nValue / COIN + 1; //automaticaly round
                                 inf.setSINType(nBurnAmount / 100000);
@@ -278,7 +285,11 @@ bool CInfinitynodeMan::buildInfinitynodeList(int nBlockHeight, int nLowHeight)
                                 }
                             }
                         }
-                    }
+                        //Amount to update Metadata
+                        if (whichType == TX_BURN_DATA && Params().GetConsensus().cMetadataAddress == EncodeDestination(CKeyID(uint160(vSolutions[0]))))
+                        {
+                        }
+                    } //end loop for all output
                 } else { //Coinbase tx => update mapLastPaid
                     if (prevBlockIndex->nHeight >= pindex->nHeight - nLastPaidScanDeepth){
                         //block payment value

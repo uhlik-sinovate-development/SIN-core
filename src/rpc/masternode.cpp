@@ -816,7 +816,7 @@ UniValue infinitynode(const JSONRPCRequest& request)
     if (request.fHelp  ||
         (strCommand != "build-list" && strCommand != "show-lastscan" && strCommand != "show-infos" && strCommand != "stats"
                                     && strCommand != "show-lastpaid" && strCommand != "build-stm" && strCommand != "show-stm"
-                                    && strCommand != "show-candidate"))
+                                    && strCommand != "show-candidate" && strCommand != "show-script"))
             throw std::runtime_error(
                 "infinitynode \"command\"...\n"
                 "Set of commands to execute masternode related actions\n"
@@ -913,8 +913,31 @@ UniValue infinitynode(const JSONRPCRequest& request)
                                inf.getExpireHeight() << " " <<
                                inf.getRoundBurnValue() << " " <<
                                inf.getSINType() << " " <<
+                               inf.getBackupAddress() << " " <<
                                inf.getLastRewardHeight() << " " <<
                                inf.getRank();
+                std::string strInfo = streamInfo.str();
+                obj.push_back(Pair(strOutpoint, strInfo));
+        }
+        return obj;
+    }
+
+    if (strCommand == "show-script")
+    {
+        std::map<COutPoint, CInfinitynode> mapInfinitynodes = infnodeman.GetFullInfinitynodeMap();
+        for (auto& infpair : mapInfinitynodes) {
+            std::string strOutpoint = infpair.first.ToStringShort();
+            CInfinitynode inf = infpair.second;
+                std::ostringstream streamInfo;
+                        std::vector<std::vector<unsigned char>> vSolutions;
+                        txnouttype whichType;
+                        const CScript& prevScript = inf.getScriptPublicKey();
+                        Solver(prevScript, whichType, vSolutions);
+                        std::string backupAddresstmp(vSolutions[1].begin(), vSolutions[1].end());
+                streamInfo << std::setw(8) <<
+                               inf.getCollateralAddress() << " " <<
+                               backupAddresstmp << " " <<
+                               inf.getRoundBurnValue();
                 std::string strInfo = streamInfo.str();
                 obj.push_back(Pair(strOutpoint, strInfo));
         }
@@ -1036,14 +1059,6 @@ static UniValue infinitynodeburnfund(const JSONRPCRequest& request)
 
         if (fValidAddress) {
             entry.pushKV("address", EncodeDestination(address));
-            /*check address is unique*/
-            for (auto& infpair : mapInfinitynodes) {
-                CInfinitynode inf = infpair.second;
-                if(inf.getCollateralAddress() == EncodeDestination(address)){
-                    strError = strprintf("Error: Address %s exist in list. Please use another address to make sure it is unique.", EncodeDestination(address));
-                    throw JSONRPCError(RPC_TYPE_ERROR, strError);
-                }
-            }
 
             auto i = pwallet->mapAddressBook.find(address);
             if (i != pwallet->mapAddressBook.end()) {
@@ -1069,6 +1084,14 @@ static UniValue infinitynodeburnfund(const JSONRPCRequest& request)
         entry.pushKV("solvable", out.fSolvable);
         entry.pushKV("safe", out.fSafe);
         if (out.tx->tx->vout[out.i].nValue >= nAmount && out.nDepth >= 2) {
+            /*check address is unique*/
+            for (auto& infpair : mapInfinitynodes) {
+                CInfinitynode inf = infpair.second;
+                if(inf.getCollateralAddress() == EncodeDestination(address)){
+                    strError = strprintf("Error: Address %s exist in list. Please use another address to make sure it is unique.", EncodeDestination(address));
+                    throw JSONRPCError(RPC_TYPE_ERROR, strError);
+                }
+            }
             // Wallet comments
             mapValue_t mapValue;
             bool fSubtractFeeFromAmount = true;

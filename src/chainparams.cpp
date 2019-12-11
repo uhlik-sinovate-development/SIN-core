@@ -169,12 +169,12 @@ public:
         vSeeds.push_back("46.101.227.238");
         vSeeds.push_back("209.97.153.68");
         vSeeds.push_back("159.89.194.138");
-	vSeeds.push_back("66.42.34.65");
-	vSeeds.push_back("149.28.173.242");
-	vSeeds.push_back("138.197.135.125");
-	vSeeds.push_back("167.172.42.45");
-    vSeeds.push_back("88.198.108.224");
-    vSeeds.push_back("95.216.140.124");
+        vSeeds.push_back("66.42.34.65");
+        vSeeds.push_back("149.28.173.242");
+        vSeeds.push_back("138.197.135.125");
+        vSeeds.push_back("167.172.42.45");
+        vSeeds.push_back("88.198.108.224");
+        vSeeds.push_back("95.216.140.124");
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,63);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,5);

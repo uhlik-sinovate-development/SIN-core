@@ -39,6 +39,7 @@ struct infinitynode_info_t
     int nSINType = 0;
     std::string collateralAddress = "";
     CScript scriptPubKey{};
+    std::string backupAddress = "BackupAddress";
     int nRank=0;
 };
 
@@ -72,20 +73,20 @@ public:
         READWRITE(nSINType);
         READWRITE(collateralAddress);
         READWRITE(scriptPubKey);
+        READWRITE(backupAddress);
     }
 
     void setHeight(int nInHeight){nHeight = nInHeight; nExpireHeight=nInHeight + 720*365;}
-    void setCollateralAddress(std::string address) {
-        collateralAddress = address;
-        CTxDestination dest = DecodeDestination(address);
-        scriptPubKey = GetScriptForDestination(dest);
-    }
+    void setCollateralAddress(std::string address) { collateralAddress = address;}
+    void setScriptPublicKey(CScript scriptpk){scriptPubKey = scriptpk;}
     void setBurnValue(CAmount burnFund){nBurnValue = burnFund;}
     void setSINType(int SINType){nSINType = SINType;}
     void setLastRewardHeight(int nReward){nLastRewardHeight = nReward;}
     void setRank(int nRankIn){nRank=nRankIn;}
+    void setBackupAddress(std::string address) { backupAddress = address;}
 
     std::string getCollateralAddress(){return collateralAddress;}
+    std::string getBackupAddress(){return backupAddress;}
     CScript getScriptPublicKey(){return scriptPubKey;}
     int getHeight(){return nHeight;}
     int getExpireHeight(){return nExpireHeight ;}
