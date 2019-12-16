@@ -29,7 +29,7 @@ Unpack the files into a directory, and then run bitcoin-qt.exe.
 
 ### macOS
 
-Drag Bitcoin Core to your applications folder, and then run Bitcoin Core.
+Drag SIN Core to your applications folder, and then run SIN Core.
 
 ### Need Help?
 
