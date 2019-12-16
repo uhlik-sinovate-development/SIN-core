@@ -67,6 +67,8 @@ struct Params {
     int nLimitSINNODE_1;// integer
     int nLimitSINNODE_5;// integer
     int nLimitSINNODE_10;// integer
+    int nInfinityNodeBeginHeight;// integer
+    int nInfinityNodeGenesisStatement;// integer
 
     int nInstantSendKeepLock; // in blocks
 
@@ -95,6 +97,10 @@ struct Params {
     const char *devAddress;
     const char *cBurnAddress;
     const char *cBurnAddressPubKey;
+    const char *cMetadataAddress;
+    const char *cMetadataAddressPubKey;
+    const char *cNotifyAddress;
+    const char *cNotifyAddressPubKey;
     /**
      * Minimum blocks including miner confirmation of the total of 2016 blocks in a retargeting period,
      * (nPowTargetTimespan / nPowTargetSpacing) which is also used for BIP9 deployments.

@@ -542,6 +542,155 @@ static CTransactionRef SendMoney(CWallet * const pwallet, const CTxDestination &
 }
 
 /**
+ * SIN functions
+ *
+ */
+static UniValue decryptAES(const JSONRPCRequest& request)
+{
+    if (request.fHelp || request.params.size() != 4)
+        throw std::runtime_error(
+            "decryptAES SINAddress text passphrase vSalt nDeriveIterations"
+            "\nDescrypt a string.\n"
+            "\nArguments:\n"
+            "1. \"text\"  (string, required) Hex String to be decrypted.\n"
+            "2. \"passphrase\"  (string, required) The passphrase\n"
+            "3. \"vSalt\"  (string, required) vector Salt. Output of encryption\n"
+            "4. \"nDeriveIterations\"  (string, required) number of rounds to find key\n"
+            "\nResult:\n"
+            "\"Decrypted String\"  (string) Decrypted string\n"
+            "\nExamples:\n"
+            + HelpExampleCli("decryptAES", "YourSinAddress passphrase vSalt nDeriveIterations")
+        );
+
+    int nDeriveIterations = 32718;
+    int nDerivationMethod = 0;
+    std::string passphrase = request.params[1].get_str();
+    nDeriveIterations = atoi(request.params[3].get_str());
+
+    std::vector<unsigned char> vchCiphertext = ParseHex(request.params[0].get_str());
+    std::vector<unsigned char> vchSalt = ParseHex(request.params[2].get_str());
+
+    CCrypter decrypt;
+    decrypt.SetKeyFromPassphrase(SecureString(passphrase.begin(), passphrase.end()), vchSalt, nDeriveIterations, nDerivationMethod);
+
+    CKeyingMaterial vchDecrypted;
+    decrypt.Decrypt(vchCiphertext, vchDecrypted);
+    std::vector<unsigned char> vchPlaintext(vchDecrypted.begin(), vchDecrypted.end());
+    std::string decryptedText(vchPlaintext.begin(), vchPlaintext.end());
+
+
+    LogPrintf("CWallet::decryptAES -- Decrypted string: %s \n", decryptedText);
+
+    UniValue entry(UniValue::VOBJ);
+    entry.pushKV("Ciphertext", request.params[0].get_str());
+    entry.pushKV("passphrase", request.params[1].get_str());
+    entry.pushKV("vSalt", request.params[2].get_str());
+    entry.pushKV("nDeriveIterations", nDeriveIterations);
+    entry.pushKV("nDerivationMethod", nDerivationMethod);
+    entry.pushKV("Size", vchDecrypted.size());
+    entry.pushKV("Decrypted", decryptedText);
+
+    return entry;
+
+}
+
+static UniValue exportaddressnewpass(const JSONRPCRequest& request)
+{
+    std::shared_ptr<CWallet> const wallet = GetWalletForJSONRPCRequest(request);
+    CWallet* const pwallet = wallet.get();
+
+    if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
+        return NullUniValue;
+    }
+
+    if (request.fHelp || request.params.size() != 2)
+        throw std::runtime_error(
+            "exportsecuaddress SINAddress passphrase "
+            "\nExport an address.\n"
+            "\nArguments:\n"
+            "1. \"SINAddress\"  (string, required) The SIN address will be used in mobile.\n"
+            "2. \"passphrase\"  (numeric or string, required) The passphrase in mobile to send funds. eg 0.1\n"
+            "\nResult:\n"
+            "\"Encrypted String\"  (string) Encrypted privkey which will be imported in mobile\n"
+            "\nExamples:\n"
+            + HelpExampleCli("exportsecuaddress", "YourSinAddress passphrase")
+        );
+
+    LOCK2(cs_main, pwallet->cs_wallet);
+
+    EnsureWalletIsUnlocked(pwallet);
+
+    std::string strAddress = request.params[0].get_str();
+    CTxDestination dest = DecodeDestination(strAddress);
+    if (!IsValidDestination(dest)) {
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid SIN address");
+    }
+    auto keyid = GetKeyForDestination(*pwallet, dest);
+    if (keyid.IsNull()) {
+        throw JSONRPCError(RPC_TYPE_ERROR, "Address does not refer to a key");
+    }
+    CKey vchSecret;
+    if (!pwallet->GetKey(keyid, vchSecret)) {
+        throw JSONRPCError(RPC_WALLET_ERROR, "Private key for address " + strAddress + " is not known");
+    }
+
+    std::string keyString = EncodeSecret(vchSecret);
+    std::vector<unsigned char> vchKey(keyString.begin(), keyString.end());
+
+    std::string keyPassPhraseString = request.params[1].get_str();
+
+    CMasterKey kMasterKey;
+    kMasterKey.vchSalt.resize(WALLET_CRYPTO_SALT_SIZE);
+    GetStrongRandBytes(&kMasterKey.vchSalt[0], WALLET_CRYPTO_SALT_SIZE);
+
+    CCrypter crypter;
+    int64_t nStartTime = GetTimeMillis();
+    crypter.SetKeyFromPassphrase(SecureString(keyPassPhraseString.begin(), keyPassPhraseString.end()), kMasterKey.vchSalt, 25000, kMasterKey.nDerivationMethod);
+    kMasterKey.nDeriveIterations = static_cast<unsigned int>(2500000 / ((double)(GetTimeMillis() - nStartTime)));
+
+    nStartTime = GetTimeMillis();
+    crypter.SetKeyFromPassphrase(SecureString(keyPassPhraseString.begin(), keyPassPhraseString.end()), kMasterKey.vchSalt, kMasterKey.nDeriveIterations, kMasterKey.nDerivationMethod);
+    kMasterKey.nDeriveIterations = (kMasterKey.nDeriveIterations + static_cast<unsigned int>(kMasterKey.nDeriveIterations * 100 / ((double)(GetTimeMillis() - nStartTime)))) / 2;
+
+    if (kMasterKey.nDeriveIterations < 25000)
+        kMasterKey.nDeriveIterations = 25000;
+
+    if (!crypter.SetKeyFromPassphrase(SecureString(keyPassPhraseString.begin(), keyPassPhraseString.end()), kMasterKey.vchSalt, kMasterKey.nDeriveIterations, kMasterKey.nDerivationMethod)) {
+        LogPrintf ("CWallet::exportmobileaddress -- can't create crypter\n");
+        return false;
+    }
+
+    if (!crypter.Encrypt(CKeyingMaterial(vchKey.begin(), vchKey.end()), kMasterKey.vchCryptedKey))
+        return false;
+
+    std::string encryptedString = HexStr(kMasterKey.vchCryptedKey.begin(), kMasterKey.vchCryptedKey.end());
+
+    //Descrypt
+    CCrypter decrypt;
+    decrypt.SetKeyFromPassphrase(SecureString(keyPassPhraseString.begin(), keyPassPhraseString.end()), kMasterKey.vchSalt, kMasterKey.nDeriveIterations, kMasterKey.nDerivationMethod);
+    CKeyingMaterial vchDecrypted;
+    decrypt.Decrypt(ParseHex(encryptedString), vchDecrypted);
+    std::vector<unsigned char> vchPlaintext(vchDecrypted.begin(), vchDecrypted.end());
+    std::string tmp2(vchPlaintext.begin(), vchPlaintext.end());
+
+    UniValue results(UniValue::VARR);
+    UniValue entry(UniValue::VOBJ);
+
+    entry.push_back(Pair("SINAddress", EncodeDestination(dest)));
+    entry.push_back(Pair("PrivkeyHex", HexStr(vchSecret.begin(), vchSecret.end())));
+    entry.push_back(Pair("Privkeyvch", std::string(vchKey.begin(), vchKey.end())));
+    entry.push_back(Pair("PrivkeyString", keyString));
+    entry.push_back(Pair("Encrypted String", encryptedString));
+    entry.push_back(Pair("Passphrase", keyPassPhraseString));
+    entry.push_back(Pair("vSalt", HexStr(kMasterKey.vchSalt)));
+    entry.push_back(Pair("nDeriveIterations", (int)kMasterKey.nDeriveIterations));
+    entry.push_back(Pair("nDerivationMethod", (int)kMasterKey.nDerivationMethod));
+    entry.push_back(Pair("Decrypted", tmp2));
+    results.push_back(entry);
+
+    return results;
+}
+/**
  * @xtdevcoin
  * this function notify that user has a data message
  */
@@ -5282,6 +5431,8 @@ static const CRPCCommand commands[] =
     { "wallet",             "rescanblockchain",                 &rescanblockchain,              {"start_height", "stop_height"} },
     { "wallet",             "sethdseed",                        &sethdseed,                     {"newkeypool","seed"} },
     { "wallet",             "infinitynodenotifydata",           &infinitynodenotifydata,        {"amount"} },
+    { "wallet",             "decryptAES",                       &decryptAES,                    {"text","passphrase","vSalt","nDeriveIterations"} },
+    { "wallet",             "exportaddressnewpass",             &exportaddressnewpass,          {"address","passphrase"} },
 
     /** Account functions (deprecated) */
     { "wallet",             "getaccountaddress",                &getaccountaddress,             {"account"} },

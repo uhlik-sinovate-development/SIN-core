@@ -67,6 +67,9 @@
 		<file alias="explorer">res/icons/explorer.png</file>
 		<file alias="twitter">res/icons/twitter.png</file>
 		<file alias="btctalk">res/icons/btctalk.png</file>
+		<file alias="youtube">res/icons/youtube.png</file>
+		<file alias="facebook">res/icons/facebook.png</file>
+		<file alias="reddit">res/icons/reddit.png</file>
     </qresource>
     <qresource prefix="/movies">
         <file alias="spinner-000">res/movies/spinner-000.png</file>

@@ -7,9 +7,9 @@
 #include <netbase.h>
 #include <messagesigner.h>
 #include <script/standard.h>
+#include <timedata.h>
 
 #include <shutdown.h>
-#include <timedata.h>
 
 #include <util.h>
 #ifdef ENABLE_WALLET

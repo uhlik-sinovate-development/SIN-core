@@ -267,6 +267,10 @@ void Shutdown()
     CFlatDB<CNetFulfilledRequestManager> flatdb4("netfulfilled.dat", "magicFulfilledCache");
     flatdb4.Dump(netfulfilledman);
     //
+    // Sinovate
+    CFlatDB<CInfinitynodeMan> flatdb5("infinitynode.dat", "magicInfinityNodeCache");
+    flatdb5.Dump(infnodeman);
+    //
 
     if (fFeeEstimatesInitialized)
     {
@@ -1302,6 +1306,7 @@ void ThreadCheckInfinityNode(CConnman& connman)
         if(masternodeSync.IsBlockchainSynced() && !ShutdownRequested() && masternodeSync.IsSynced()) {
 
             nTick++;
+            LogPrintf("nTick: %d\n",nTick);
 
             // make sure to check all masternodes first
             mnodeman.Check();
@@ -1318,20 +1323,20 @@ void ThreadCheckInfinityNode(CConnman& connman)
                 netfulfilledman.CheckAndRemove();
                 mnodeman.ProcessMasternodeConnections(connman);
                 mnodeman.CheckAndRemove(connman);
-                mnodeman.CheckAndRemoveBurnFundNotUniqueNode(connman);
-                mnodeman.CheckAndRemoveLimitNumberNode(connman, 1, Params().GetConsensus().nLimitSINNODE_1);
-                mnodeman.CheckAndRemoveLimitNumberNode(connman, 5, Params().GetConsensus().nLimitSINNODE_5);
-                mnodeman.CheckAndRemoveLimitNumberNode(connman, 10, Params().GetConsensus().nLimitSINNODE_10);
                 //mnodeman.WarnMasternodeDaemonUpdates();
                 mnpayments.CheckAndRemove();
                 instantsend.CheckAndRemove();
-                infnodeman.CheckAndRemove(connman);
             }
             if(fMasterNode && (nTick % (60 * 5) == 0)) {
                 mnodeman.DoFullVerificationStep(connman);
             }
             if(nTick % (60 * 5) == 0) {
-                governance.DoMaintenance(connman);
+                //governance.DoMaintenance(connman);
+                infnodeman.CheckAndRemove(connman);
+                mnodeman.CheckAndRemoveBurnFundNotUniqueNode(connman);
+                mnodeman.CheckAndRemoveLimitNumberNode(connman, 1, Params().GetConsensus().nLimitSINNODE_1);
+                mnodeman.CheckAndRemoveLimitNumberNode(connman, 5, Params().GetConsensus().nLimitSINNODE_5);
+                mnodeman.CheckAndRemoveLimitNumberNode(connman, 10, Params().GetConsensus().nLimitSINNODE_10);
             }
         }
     }
@@ -1910,6 +1915,7 @@ bool AppInitMain()
 
     LogPrintf("fLiteMode %d\n", fLiteMode);
     LogPrintf("nInstantSendDepth %d\n", nInstantSendDepth);
+
     // ********************************************************* Step 11b: Load cache data
 
     // LOAD SERIALIZED DAT FILES INTO DATA CACHES FOR INTERNAL USE
@@ -1949,6 +1955,27 @@ bool AppInitMain()
     if(!flatdb4.Load(netfulfilledman)) {
         return InitError(_("Failed to load fulfilled requests cache from") + "\n" + (pathDB / strDBName).string());
     }
+
+    strDBName = "infinitynode.dat";
+    uiInterface.InitMessage(_("Loading on-chain infinitynode list..."));
+    CFlatDB<CInfinitynodeMan> flatdb5(strDBName, "magicInfinityNodeCache");
+    if(!flatdb5.Load(infnodeman)) {
+        return InitError(_("Failed to load masternode cache from") + "\n" + (pathDB / strDBName).string());
+    }
+    if (infnodeman.getLastScan() == 0){
+        uiInterface.InitMessage(_("Initial on-chain infinitynode list..."));
+        if ( chainActive.Height() < Params().GetConsensus().nInfinityNodeBeginHeight || infnodeman.initialInfinitynodeList(chainActive.Height()) == false){
+            LogPrintf("InfinityNode does not begin or error in initial list of node:\n");
+        }
+    } else {
+        uiInterface.InitMessage(_("Update on-chain infinitynode list..."));
+        if ( chainActive.Height() < infnodeman.getLastScan() || infnodeman.updateInfinitynodeList(chainActive.Height()) == false){
+            LogPrintf("Lastscan is higher than chainActive or error in update list of node:\n");
+        }
+    }
+
+    // ********************************************************* Step 11b1: init and load data
+
 
     // ********************************************************* Step 11c: update block tip in Dash modules
 

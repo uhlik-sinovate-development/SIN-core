@@ -13,6 +13,7 @@
 #include <masternode-sync.h>
 #include <masternodeconfig.h>
 #include <masternodeman.h>
+#include <infinitynodeman.h>
 #ifdef ENABLE_WALLET
 #include <wallet/coincontrol.h>
 #endif // ENABLE_WALLET
@@ -795,35 +796,185 @@ UniValue sentinelping(const JSONRPCRequest& request)
     return true;
 }
 
+UniValue infinitynode(const JSONRPCRequest& request)
+{
+#ifdef ENABLE_WALLET
+    std::shared_ptr<CWallet> const wallet = GetWalletForJSONRPCRequest(request);
+    CWallet* const pwallet = wallet.get();
+#endif // ENABLE_WALLET
+
+    std::string strCommand;
+    std::string strFilter = "";
+
+    if (request.params.size() >= 1) {
+        strCommand = request.params[0].get_str();
+    }
+    if (request.params.size() == 2) strFilter = request.params[1].get_str();
+    if (request.params.size() > 2)
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Too many parameters");
+
+    if (request.fHelp  ||
+        (strCommand != "build-list" && strCommand != "show-lastscan" && strCommand != "show-infos" && strCommand != "stats"
+                                    && strCommand != "show-lastpaid" && strCommand != "build-stm" && strCommand != "show-stm"
+                                    && strCommand != "show-candidate" && strCommand != "show-script"))
+            throw std::runtime_error(
+                "infinitynode \"command\"...\n"
+                "Set of commands to execute masternode related actions\n"
+                "\nArguments:\n"
+                "1. \"command\"        (string or set of strings, required) The command to execute\n"
+                "\nAvailable commands:\n"
+                "  build-list                  - Build list of all infinitynode from block height 165000 to last block\n"
+                "  show-infos                  - Show the list of nodes and last information\n"
+                "  show-lastscan               - Last nHeight when list is updated\n"
+                "  show-lastpaid               - Last paid of all nodes\n"
+                "  build-stm                   - Build statement list from genesis parameter\n"
+                "  show-stm                    - Last statement of each SinType\n"
+                "  show-candidate nHeight      - Last statement of each SinType\n"
+                );
+
+    UniValue obj(UniValue::VOBJ);
+
+    if (strCommand == "build-list")
+    {
+        CBlockIndex* pindex = NULL;
+        {
+                LOCK(cs_main);
+                pindex = chainActive.Tip();
+        }
+
+        if (request.params.size() == 1)
+            return infnodeman.buildInfinitynodeList(pindex->nHeight);
+
+        std::string strMode = request.params[1].get_str();
+
+        if (strMode == "lastscan")
+            return infnodeman.getLastScan();
+    }
+
+    if (strCommand == "build-stm")
+    {
+            return infnodeman.deterministicRewardStatement(10) &&
+                   infnodeman.deterministicRewardStatement(5) &&
+                   infnodeman.deterministicRewardStatement(1);
+    }
+
+    if (strCommand == "show-stm")
+    {
+        return infnodeman.getLastStatementString();
+    }
+
+    if (strCommand == "show-candidate")
+    {
+        if (request.params.size() != 2)
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Correct usage is 'infinitynode show-candidate \"nHeight\"'");
+        int nextHeight = 10;
+        nextHeight = atoi(strFilter);
+
+        if ( nextHeight < Params().GetConsensus().nInfinityNodeGenesisStatement)
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "nHeight must superior than Genesis Statement param");
+
+        CInfinitynode infBIG, infMID, infLIL;
+        infnodeman.deterministicRewardAtHeight(nextHeight, 10, infBIG);
+        infnodeman.deterministicRewardAtHeight(nextHeight, 5, infMID);
+        infnodeman.deterministicRewardAtHeight(nextHeight, 1, infLIL);
+
+        obj.push_back(Pair("Candidate BIG: ", infBIG.getCollateralAddress()));
+        obj.push_back(Pair("Candidate MID: ", infMID.getCollateralAddress()));
+        obj.push_back(Pair("Candidate LIL: ", infLIL.getCollateralAddress()));
+
+        return obj;
+    }
+
+    if (strCommand == "show-lastscan")
+    {
+            return infnodeman.getLastScan();
+    }
+
+    if (strCommand == "show-lastpaid")
+    {
+        std::map<CScript, int>  mapLastPaid = infnodeman.GetFullLastPaidMap();
+        for (auto& pair : mapLastPaid) {
+            std::string scriptPublicKey = pair.first.ToString();
+            obj.push_back(Pair(scriptPublicKey, pair.second));
+        }
+        return obj;
+    }
+
+    if (strCommand == "show-infos")
+    {
+        std::map<COutPoint, CInfinitynode> mapInfinitynodes = infnodeman.GetFullInfinitynodeMap();
+        for (auto& infpair : mapInfinitynodes) {
+            std::string strOutpoint = infpair.first.ToStringShort();
+            CInfinitynode inf = infpair.second;
+                std::ostringstream streamInfo;
+                streamInfo << std::setw(8) <<
+                               inf.getCollateralAddress() << " " <<
+                               inf.getHeight() << " " <<
+                               inf.getExpireHeight() << " " <<
+                               inf.getRoundBurnValue() << " " <<
+                               inf.getSINType() << " " <<
+                               inf.getBackupAddress() << " " <<
+                               inf.getLastRewardHeight() << " " <<
+                               inf.getRank();
+                std::string strInfo = streamInfo.str();
+                obj.push_back(Pair(strOutpoint, strInfo));
+        }
+        return obj;
+    }
+
+    if (strCommand == "show-script")
+    {
+        std::map<COutPoint, CInfinitynode> mapInfinitynodes = infnodeman.GetFullInfinitynodeMap();
+        for (auto& infpair : mapInfinitynodes) {
+            std::string strOutpoint = infpair.first.ToStringShort();
+            CInfinitynode inf = infpair.second;
+                std::ostringstream streamInfo;
+                        std::vector<std::vector<unsigned char>> vSolutions;
+                        txnouttype whichType;
+                        const CScript& prevScript = inf.getScriptPublicKey();
+                        Solver(prevScript, whichType, vSolutions);
+                        std::string backupAddresstmp(vSolutions[1].begin(), vSolutions[1].end());
+                streamInfo << std::setw(8) <<
+                               inf.getCollateralAddress() << " " <<
+                               backupAddresstmp << " " <<
+                               inf.getRoundBurnValue();
+                std::string strInfo = streamInfo.str();
+                obj.push_back(Pair(strOutpoint, strInfo));
+        }
+        return obj;
+    }
+}
+
 /**
  * @xtdevcoin
  * this function help user burn correctly their funds to run infinity node
  */
 static UniValue infinitynodeburnfund(const JSONRPCRequest& request)
 {
-	std::shared_ptr<CWallet> const wallet = GetWalletForJSONRPCRequest(request);
+    std::shared_ptr<CWallet> const wallet = GetWalletForJSONRPCRequest(request);
     CWallet* const pwallet = wallet.get();
 
     if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
         return NullUniValue;
     }
 
-    if (request.fHelp || request.params.size() != 1)
+    if (request.fHelp || request.params.size() != 2)
        throw std::runtime_error(
             "sendtoaddress amount "
             "\nSend an amount to BurnAddress.\n"
             "\nArguments:\n"
             "1. \"amount\"             (numeric or string, required) The amount in " + CURRENCY_UNIT + " to send. eg 0.1\n"
+            "2. \"NodeOwnerBackupAddress\"  (string, required) The SIN address to send to when you make a notification(new feature soon).\n"
             "\nResult:\n"
             "\"BURNtxid\"                  (string) The Burn transaction id. Need to run infinity node\n"
             "\"CollateralAddress\"         (string) Address of Collateral. Please send 10000 to this address.\n"
             "\nExamples:\n"
-            + HelpExampleCli("infinitynodeburnfund", "1000000")
+            + HelpExampleCli("infinitynodeburnfund", "1000000 SINBackupAddress")
         );
     // Make sure the results are valid at least up to the most recent block
     // the user could have gotten from another RPC command prior to now
     pwallet->BlockUntilSyncedToCurrentChain();
-	
+
     if(!masternodeSync.IsMasternodeListSynced())
     {
         throw JSONRPCError(RPC_TYPE_ERROR, "Please wait until InfinityNode data is synced!");
@@ -833,7 +984,7 @@ static UniValue infinitynodeburnfund(const JSONRPCRequest& request)
         mnodeman.CountSinType(5) >= Params().GetConsensus().nLimitSINNODE_5 &&
         mnodeman.CountSinType(10) >= Params().GetConsensus().nLimitSINNODE_10)
     {
-        throw JSONRPCError(RPC_TYPE_ERROR, "Number of SINNODE is FULL");
+        throw JSONRPCError(RPC_TYPE_ERROR, "Number of INFINITYNODE is FULL");
     }
 
     LOCK2(cs_main, pwallet->cs_wallet);
@@ -848,15 +999,38 @@ static UniValue infinitynodeburnfund(const JSONRPCRequest& request)
         nAmount != Params().GetConsensus().nMasternodeBurnSINNODE_5 * COIN &&
         nAmount != Params().GetConsensus().nMasternodeBurnSINNODE_10 * COIN)
     {
-        throw JSONRPCError(RPC_TYPE_ERROR, "Invalid amount to burn and run Infinity node");
+        throw JSONRPCError(RPC_TYPE_ERROR, "Invalid amount to burn and run Infinitynode");
     }
 
+    CTxDestination BKaddress = DecodeDestination(request.params[1].get_str());
+    if (!IsValidDestination(BKaddress))
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid SIN address for Backup");
+
+    std::map<COutPoint, CInfinitynode> mapInfinitynodes = infnodeman.GetFullInfinitynodeMap();
+    int totalNode = 0, totalBIG = 0, totalMID = 0, totalLIL = 0, totalUnknown = 0;
+    for (auto& infpair : mapInfinitynodes) {
+        ++totalNode;
+        CInfinitynode inf = infpair.second;
+        int sintype = inf.getSINType();
+        if (sintype == 10) ++totalBIG;
+        else if (sintype == 5) ++totalMID;
+        else if (sintype == 1) ++totalLIL;
+        else ++totalUnknown;
+    }
     //Limit node
     if ((nAmount == Params().GetConsensus().nMasternodeBurnSINNODE_1 * COIN && mnodeman.CountSinType(1) >= Params().GetConsensus().nLimitSINNODE_1) ||
         (nAmount == Params().GetConsensus().nMasternodeBurnSINNODE_5 * COIN && mnodeman.CountSinType(5) >= Params().GetConsensus().nLimitSINNODE_5) ||
         (nAmount == Params().GetConsensus().nMasternodeBurnSINNODE_10 * COIN && mnodeman.CountSinType(10) >= Params().GetConsensus().nLimitSINNODE_10) )
     {
         strError = strprintf("Error: Number of SINNODE for type %d is FULL", nAmount/COIN);
+        throw JSONRPCError(RPC_TYPE_ERROR, strError);
+    }
+
+    if ((nAmount == Params().GetConsensus().nMasternodeBurnSINNODE_1 * COIN && totalLIL >= Params().GetConsensus().nLimitSINNODE_1) ||
+        (nAmount == Params().GetConsensus().nMasternodeBurnSINNODE_5 * COIN && totalMID >= Params().GetConsensus().nLimitSINNODE_5) ||
+        (nAmount == Params().GetConsensus().nMasternodeBurnSINNODE_10 * COIN && totalBIG >= Params().GetConsensus().nLimitSINNODE_10) )
+    {
+        strError = strprintf("Error: Number of INFINITYNODE for type %d is FULL", nAmount/COIN);
         throw JSONRPCError(RPC_TYPE_ERROR, strError);
     }
     // BurnAddress
@@ -868,7 +1042,7 @@ static UniValue infinitynodeburnfund(const JSONRPCRequest& request)
         return false;
     CKeyID keyid = CKeyID(uint160(vSolutions[0]));
 
-	// Wallet comments
+    // Wallet comments
     std::set<CTxDestination> destinations;
     LOCK(pwallet->cs_wallet);
     for (COutput& out : vPossibleCoins) {
@@ -910,6 +1084,14 @@ static UniValue infinitynodeburnfund(const JSONRPCRequest& request)
         entry.pushKV("solvable", out.fSolvable);
         entry.pushKV("safe", out.fSafe);
         if (out.tx->tx->vout[out.i].nValue >= nAmount && out.nDepth >= 2) {
+            /*check address is unique*/
+            for (auto& infpair : mapInfinitynodes) {
+                CInfinitynode inf = infpair.second;
+                if(inf.getCollateralAddress() == EncodeDestination(address)){
+                    strError = strprintf("Error: Address %s exist in list. Please use another address to make sure it is unique.", EncodeDestination(address));
+                    throw JSONRPCError(RPC_TYPE_ERROR, strError);
+                }
+            }
             // Wallet comments
             mapValue_t mapValue;
             bool fSubtractFeeFromAmount = true;
@@ -918,7 +1100,7 @@ static UniValue infinitynodeburnfund(const JSONRPCRequest& request)
             coin_control.Select(COutPoint(out.tx->GetHash(), out.i));
 
             CScript script;
-            script = GetScriptForBurn(keyid, "burncoin");
+            script = GetScriptForBurn(keyid, request.params[1].get_str());
 
             CReserveKey reservekey(pwallet);
             CAmount nFeeRequired;
@@ -944,7 +1126,8 @@ static UniValue infinitynodeburnfund(const JSONRPCRequest& request)
             entry.pushKV("BURNPUBLICKEY", HexStr(keyid.begin(), keyid.end()));
             entry.pushKV("BURNSCRIPT", HexStr(scriptPubKeyBurnAddress.begin(), scriptPubKeyBurnAddress.end()));
             entry.pushKV("BURNTX", tx->GetHash().GetHex());
-            entry.pushKV("COLLATERAL_ADDRESS",EncodeDestination(address));
+            entry.pushKV("OWNER_ADDRESS",EncodeDestination(address));
+            entry.pushKV("BACKUP_ADDRESS",EncodeDestination(BKaddress));
             //coins is good to burn
             results.push_back(entry);
             break; //immediat
@@ -1044,6 +1227,7 @@ static const CRPCCommand commands[] =
     { "dash",               "masternodebroadcast",    &masternodebroadcast,    {"command"}  },
     { "SIN",                "mnsetup",                &mnsetup,                {}  },
     { "SIN",                "infinitynodeburnfund",   &infinitynodeburnfund,   {"amount"} },
+    { "SIN",                "infinitynode",           &infinitynode,           {"command"}  },
 };
 
 void RegisterDashMasternodeRPCCommands(CRPCTable &t)

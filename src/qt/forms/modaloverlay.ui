@@ -33,7 +33,7 @@
     <widget class="QWidget" name="bgWidget" native="true">
      <property name="styleSheet">
       <string notr="true">QWidget#bgWidget {
-background-color: #0d1827 ;
+background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop:0 #0d0d1a, stop:1 #191b41); color:#020024;
 color: #ffffff;
 } 
 </string>
@@ -57,7 +57,7 @@ color: #ffffff;
          <string notr="true">QLabel { color: rgb(255,255,255);  }
 
 #contentWidget {
-background-color: #0d1827 ; 
+background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop:0 #0d0d1a, stop:1 #191b41); color:#020024;
  border-radius: 6px;
 color: #ffffff;
 } </string>

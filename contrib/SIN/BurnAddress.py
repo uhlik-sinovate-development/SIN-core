@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import sys
 import binascii
 
@@ -34,7 +35,7 @@ def burn(s):
   return b58ec(coded)
 
 def usage():
-  print "usage: BurnAddress TEMPLATE"
+  print "usage: python BurnAddress TEMPLATE"
   print
   print "   TEMPLATE - 34 letters & numbers (no zeros)"
   print "              the first two are coin specific"
