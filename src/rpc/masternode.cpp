@@ -954,13 +954,9 @@ static UniValue infinitynodeburnfund(const JSONRPCRequest& request)
     std::shared_ptr<CWallet> const wallet = GetWalletForJSONRPCRequest(request);
     CWallet* const pwallet = wallet.get();
 
-    if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
-        return NullUniValue;
-    }
-
     if (request.fHelp || request.params.size() != 2)
        throw std::runtime_error(
-            "sendtoaddress amount "
+            "infinitynodeburnfund amount SINBackupAddress"
             "\nSend an amount to BurnAddress.\n"
             "\nArguments:\n"
             "1. \"amount\"             (numeric or string, required) The amount in " + CURRENCY_UNIT + " to send. eg 0.1\n"
@@ -971,9 +967,6 @@ static UniValue infinitynodeburnfund(const JSONRPCRequest& request)
             "\nExamples:\n"
             + HelpExampleCli("infinitynodeburnfund", "1000000 SINBackupAddress")
         );
-    // Make sure the results are valid at least up to the most recent block
-    // the user could have gotten from another RPC command prior to now
-    pwallet->BlockUntilSyncedToCurrentChain();
 
     if(!masternodeSync.IsMasternodeListSynced())
     {
@@ -988,6 +981,11 @@ static UniValue infinitynodeburnfund(const JSONRPCRequest& request)
     }
 
     LOCK2(cs_main, pwallet->cs_wallet);
+    EnsureWalletIsUnlocked(pwallet);
+    // Make sure the results are valid at least up to the most recent block
+    // the user could have gotten from another RPC command prior to now
+    pwallet->BlockUntilSyncedToCurrentChain();
+
     std::string strError;
     std::vector<COutput> vPossibleCoins;
     pwallet->AvailableCoins(vPossibleCoins, true, NULL, false, ALL_COINS);
@@ -1136,6 +1134,122 @@ static UniValue infinitynodeburnfund(const JSONRPCRequest& request)
     return results;
 }
 
+
+static UniValue infinitynodeupdatemeta(const JSONRPCRequest& request)
+{
+    std::shared_ptr<CWallet> const wallet = GetWalletForJSONRPCRequest(request);
+    CWallet* const pwallet = wallet.get();
+
+    if (request.fHelp || request.params.size() != 3)
+       throw std::runtime_error(
+            "infinitynodeupdatemeta INFAddress UpdateInfo"
+            "\nSend update info.\n"
+            "\nArguments:\n"
+            "1. \"OwnerAddress\"  (string, required) Address of node OWNER which funds are burnt.\n"
+            "2. \"NodeAddress\"   (string, required) Address of node which will be used for valide Reward, FlashSend...\n"
+            "3. \"IP\"            (string, required) IP of node.\n"
+            "\nResult:\n"
+            "\"UpdateInfo upadted message\"   (string) The Burn transaction id. Need to run infinity node\n"
+            "\nExamples:\n"
+            + HelpExampleCli("infinitynodeupdatemeta", "OwnerAddress NodeAddress IP")
+        );
+    UniValue results(UniValue::VOBJ);
+
+    std::string strOwnerAddress = request.params[0].get_str();
+    CTxDestination INFAddress = DecodeDestination(strOwnerAddress);
+    if (!IsValidDestination(INFAddress)) {
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid SIN address: OwnerAddress");
+    }
+
+    std::string strNodeAddress = request.params[1].get_str();
+    CTxDestination NodeAddress = DecodeDestination(strNodeAddress);
+    if (!IsValidDestination(NodeAddress)) {
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid SIN address: NodeAddress");
+    }
+
+    std::string strService = request.params[2].get_str();
+    CService service;
+    if (!Lookup(strService.c_str(), service, 0, false)){
+           throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "IP address is not valide");
+    }
+
+    LOCK2(cs_main, pwallet->cs_wallet);
+    EnsureWalletIsUnlocked(pwallet);
+    // Make sure the results are valid at least up to the most recent block
+    // the user could have gotten from another RPC command prior to now
+    pwallet->BlockUntilSyncedToCurrentChain();
+
+    std::string strError;
+    std::vector<COutput> vPossibleCoins;
+    pwallet->AvailableCoins(vPossibleCoins, true, NULL, false, ALL_COINS);
+
+    // cMetadataAddress
+    CTxDestination dest = DecodeDestination(Params().GetConsensus().cMetadataAddress);
+    CScript scriptPubKeyMetaAddress = GetScriptForDestination(dest);
+    std::vector<std::vector<unsigned char> > vSolutions;
+    txnouttype whichType;
+    if (!Solver(scriptPubKeyMetaAddress, whichType, vSolutions))
+            return false;
+    CKeyID keyid = CKeyID(uint160(vSolutions[0]));
+
+    std::ostringstream streamInfo;
+
+    for (COutput& out : vPossibleCoins) {
+        CTxDestination address;
+        const CScript& scriptPubKey = out.tx->tx->vout[out.i].scriptPubKey;
+        bool fValidAddress = ExtractDestination(scriptPubKey, address);
+
+        if (!fValidAddress) continue;
+        if (EncodeDestination(INFAddress) != EncodeDestination(address)) continue;
+        //use coin with limit value
+        if (out.tx->tx->vout[out.i].nValue / COIN >= Params().GetConsensus().nInfinityNodeUpdateMeta
+            && out.tx->tx->vout[out.i].nValue / COIN < Params().GetConsensus().nInfinityNodeUpdateMeta*100
+            && out.nDepth >= 2) {
+            CAmount nAmount = Params().GetConsensus().nInfinityNodeUpdateMeta*COIN;
+            mapValue_t mapValue;
+            bool fSubtractFeeFromAmount = true;
+            bool fUseInstantSend=false;
+            CCoinControl coin_control;
+            coin_control.Select(COutPoint(out.tx->GetHash(), out.i));
+
+            streamInfo << strNodeAddress << ";" << strService;
+            std::string strInfo = streamInfo.str();
+            CScript script;
+            script = GetScriptForBurn(keyid, request.params[1].get_str());
+
+            CReserveKey reservekey(pwallet);
+            CAmount nFeeRequired;
+            CAmount curBalance = pwallet->GetBalance();
+            
+            std::vector<CRecipient> vecSend;
+            int nChangePosRet = -1;
+            CRecipient recipient = {script, nAmount, fSubtractFeeFromAmount};
+            vecSend.push_back(recipient);
+
+            results.push_back(Pair("Metadata",streamInfo.str()));
+
+
+            CTransactionRef tx;
+            if (!pwallet->CreateTransaction(vecSend, tx, reservekey, nFeeRequired, nChangePosRet, strError, coin_control, true, ALL_COINS, fUseInstantSend)) {
+                if (!fSubtractFeeFromAmount && nAmount + nFeeRequired > curBalance)
+                    strError = strprintf("Error: This transaction requires a transaction fee of at least %s", FormatMoney(nFeeRequired));
+                throw JSONRPCError(RPC_WALLET_ERROR, strError);
+            }
+            CValidationState state;
+
+            if (!pwallet->CommitTransaction(tx, std::move(mapValue), {}, {}, reservekey, g_connman.get(),
+                            state, fUseInstantSend ? NetMsgType::TXLOCKREQUEST : NetMsgType::TX)) {
+                strError = strprintf("Error: The transaction was rejected! Reason given: %s", FormatStateMessage(state));
+                throw JSONRPCError(RPC_WALLET_ERROR, strError);
+            }
+
+            break; //immediat
+        }
+    }
+
+    return results;
+}
+
 UniValue mnsetup(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() < 1)
@@ -1227,6 +1341,7 @@ static const CRPCCommand commands[] =
     { "dash",               "masternodebroadcast",    &masternodebroadcast,    {"command"}  },
     { "SIN",                "mnsetup",                &mnsetup,                {}  },
     { "SIN",                "infinitynodeburnfund",   &infinitynodeburnfund,   {"amount"} },
+    { "SIN",                "infinitynodeupdatemeta", &infinitynodeupdatemeta, {"owner_address","node_address","IP"} },
     { "SIN",                "infinitynode",           &infinitynode,           {"command"}  },
 };
 

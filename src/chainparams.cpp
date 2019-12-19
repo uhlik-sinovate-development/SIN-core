@@ -93,6 +93,7 @@ public:
         consensus.nInstantSendKeepLock = 24;
         consensus.nInfinityNodeBeginHeight=160000;
         consensus.nInfinityNodeGenesisStatement=250000;
+        consensus.nInfinityNodeUpdateMeta=25;
 
         consensus.nBudgetPaymentsStartBlock = 365 * 1440; // 1 common year
         consensus.nBudgetPaymentsCycleBlocks = 10958; // weekly
@@ -227,6 +228,7 @@ public:
         consensus.nInstantSendKeepLock = 24;
         consensus.nInfinityNodeBeginHeight=100;
         consensus.nInfinityNodeGenesisStatement=110;
+        consensus.nInfinityNodeUpdateMeta=5;
 
         consensus.nBudgetPaymentsStartBlock = 365 * 1440; // 1 common year
         consensus.nBudgetPaymentsCycleBlocks = 10958; // weekly
@@ -345,6 +347,7 @@ public:
         consensus.nInstantSendKeepLock = 24;
         consensus.nInfinityNodeBeginHeight=100;
         consensus.nInfinityNodeGenesisStatement=110;
+        consensus.nInfinityNodeUpdateMeta=5;
 
         consensus.nBudgetPaymentsStartBlock = 365 * 1440; // 1 common year
         consensus.nBudgetPaymentsCycleBlocks = 10958; // weekly
@@ -453,6 +456,7 @@ public:
         consensus.nSubsidyHalvingInterval = 150;
         consensus.nInfinityNodeBeginHeight=100;
         consensus.nInfinityNodeGenesisStatement=110;
+        consensus.nInfinityNodeUpdateMeta=5;
 
         consensus.BIP16Exception = uint256();
         consensus.BIP34Height = 100000000;
